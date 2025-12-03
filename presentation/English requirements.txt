@@ -19,7 +19,7 @@
 16. The previously stated notification must take this form: "Hi, *username* has decided to take part to *event name* which takes place in *event place* on *event date*!"
 17. The system must recommend a registered user other events where he might take part based on:
 	a) Previous reviews (written by the user or by his friends) 
-	b) Past events the user has alredy attended to (both regarding the place or the theme)
+	b) Past events the user has already attended to (both regarding the place or the theme)
 	c) Distance by his home
 	d) His own interests
 
@@ -35,7 +35,7 @@
 26. The system must allow an event organizer to register a new event providing its details
 27. Events' details include: Name, Location, Tickets' price (based on ticket type, can be free), Start Date, End Date (if the event lasts for more than one single day), Category, Description (optional), Poster (optional), Starting Time(s)
 28. The system must allow an event organizer to modify his own events' details
-29. Whenever an event organizer modifies an event's details, the registered users which stated their presence will receive a notification via email containing the modified informations
+29. Whenever an event organizer modifies an event's details, the registered users which stated their presence will receive a notification via email containing the modified information
 30. The system must be able to show an event organizer how many registered users stated their presence at his events
 31. The system must be able to show an event organizer various statistics for each event, such as:
 	a) Average age of registered users who stated their presence at the event
