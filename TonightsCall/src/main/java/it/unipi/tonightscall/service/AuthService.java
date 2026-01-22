@@ -3,14 +3,20 @@ package it.unipi.tonightscall.service;
 import it.unipi.tonightscall.DTO.OrganizationDTO;
 import it.unipi.tonightscall.DTO.OrganizerDTO;
 import it.unipi.tonightscall.DTO.UserDTO;
-import it.unipi.tonightscall.entity.AbstracOrganizer;
-import it.unipi.tonightscall.entity.Organization;
-import it.unipi.tonightscall.entity.Organizer;
-import it.unipi.tonightscall.entity.User;
+import it.unipi.tonightscall.entity.document.AbstracOrganizer;
+import it.unipi.tonightscall.entity.document.Organization;
+import it.unipi.tonightscall.entity.document.Organizer;
+import it.unipi.tonightscall.entity.document.User;
+import it.unipi.tonightscall.entity.graph.OrganizerNode;
+import it.unipi.tonightscall.entity.graph.TopicNode;
+import it.unipi.tonightscall.entity.graph.UserNode;
 import it.unipi.tonightscall.jwt.JWTService;
-import it.unipi.tonightscall.repository.AbstractOrganizerRepository;
-import it.unipi.tonightscall.repository.OrganizerRepository;
-import it.unipi.tonightscall.repository.UserRepository;
+import it.unipi.tonightscall.repository.document.AbstractOrganizerRepository;
+import it.unipi.tonightscall.repository.document.OrganizerRepository;
+import it.unipi.tonightscall.repository.document.UserRepository;
+import it.unipi.tonightscall.repository.graph.OrganizerGraphRepository;
+import it.unipi.tonightscall.repository.graph.TopicGraphRepository;
+import it.unipi.tonightscall.repository.graph.UserGraphRepository;
 import it.unipi.tonightscall.utilies.Mapper;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,12 +35,20 @@ public class AuthService {
     private final UserRepository userRepository;
     private final AbstractOrganizerRepository abstractOrganizerRepository;
     private final OrganizerRepository organizerRepository;
+
+    private final UserGraphRepository userGraphRepository;
+    private final OrganizerGraphRepository  organizerGraphRepository;
+    private final TopicGraphRepository topicGraphRepository;
+
     private final PasswordEncoder passwordEncoder;
     private final JWTService jwtService;
 
     public AuthService(UserRepository userRepository,
                        AbstractOrganizerRepository abstractOrganizerRepository,
                        OrganizerRepository organizerRepository,
+                       UserGraphRepository userGraphRepository,
+                       OrganizerGraphRepository organizerGraphRepository,
+                       TopicGraphRepository topicGraphRepository,
                        PasswordEncoder passwordEncoder,
                        JWTService jwtService) {
         this.userRepository = userRepository;
@@ -42,6 +56,9 @@ public class AuthService {
         this.jwtService = jwtService;
         this.abstractOrganizerRepository = abstractOrganizerRepository;
         this.organizerRepository = organizerRepository;
+        this.userGraphRepository = userGraphRepository;
+        this.organizerGraphRepository = organizerGraphRepository;
+        this.topicGraphRepository = topicGraphRepository;
     }
 
     /**
@@ -64,6 +81,24 @@ public class AuthService {
         entity.setPassword(passwordEncoder.encode(userDto.getPassword()));
         User saved = userRepository.save(entity);
 
+        UserNode userNode = Mapper.mapUserToNode(userDto);
+        userNode.setId(saved.getId());
+
+        System.out.println(userDto.getInterests().get(0));
+        if (userDto.getInterests() != null && !userDto.getInterests().isEmpty()) {
+
+            for (String interess : userDto.getInterests()) {
+
+                interess = interess.toUpperCase();
+                TopicNode topicNode = topicGraphRepository.findById(interess)
+                    .orElse(new TopicNode(interess));
+
+                topicNode = topicGraphRepository.save(topicNode);
+                userNode.getInterests().add(topicNode);
+            }
+        }
+
+        UserNode savedNode = userGraphRepository.save(userNode);
         return Mapper.mapUserToDto(saved);
      }
 
@@ -94,6 +129,9 @@ public class AuthService {
         Organizer entity = Mapper.mapOrganizerToEntity(organizerDto);
         entity.setPassword(passwordEncoder.encode(organizerDto.getPassword()));
         Organizer saved = organizerRepository.save(entity);
+
+        OrganizerNode organizerNode = Mapper.mapOrganizerToNode(organizerDto);
+        OrganizerNode savedNode = organizerGraphRepository.save(organizerNode);
 
         return Mapper.mapOrganizerToDto(saved);
     }

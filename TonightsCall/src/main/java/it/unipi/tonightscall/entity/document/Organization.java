@@ -1,7 +1,5 @@
-package it.unipi.tonightscall.entity;
+package it.unipi.tonightscall.entity.document;
 
-import it.unipi.tonightscall.DTO.MembersDTO;
-import it.unipi.tonightscall.DTO.RequestDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,6 +9,12 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
+/**
+ * Entity representing an Organization (Company/Group).
+ * <p>
+ * Identified in the database by the type alias "ORGANIZATION".
+ * </p>
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,9 +22,15 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class Organization extends AbstracOrganizer {
 
+    /**
+     * List of members belonging to this organization.
+     */
     @Field("list_of_members")
     private List<Members> members;
 
+    /**
+     * List of pending join requests.
+     */
     @Field("pending_requests")
     private List<Request> pendingRequests;
 

@@ -1,7 +1,9 @@
 package it.unipi.tonightscall.utilies;
 
 import it.unipi.tonightscall.DTO.*;
-import it.unipi.tonightscall.entity.*;
+import it.unipi.tonightscall.entity.document.*;
+import it.unipi.tonightscall.entity.graph.OrganizerNode;
+import it.unipi.tonightscall.entity.graph.UserNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +12,7 @@ import java.util.List;
  * Utility class for mapping objects between the Data Transfer Object (DTO) layer
  * and the Persistence (Entity) layer.
  * <p>
- * This class provides static methods to convert {@link UserDTO} to {@link User} and vice versa.
+ * This class provides static methods to convert DTO to User and vice versa.
  * It manually handles nested objects such as HomeTown and ReviewEvents to ensure
  * precise control over the data structure.
  * </p>
@@ -139,6 +141,15 @@ public class Mapper {
         return entity;
     }
 
+    /**
+     * Converts an OrganizerDTO (API object) into an Organizer Entity (Database object).
+     * <p>
+     * Handles mapping of specific fields like events list and linked organizations.
+     * </p>
+     *
+     * @param dto The OrganizerDTO containing individual organizer details.
+     * @return An Organizer entity ready for MongoDB persistence.
+     */
     public static Organizer mapOrganizerToEntity(OrganizerDTO dto) {
 
         if (dto == null) {
@@ -191,6 +202,12 @@ public class Mapper {
         return entity;
     }
 
+    /**
+     * Converts an Organizer Entity (Database object) into an OrganizerDTO (API object).
+     *
+     * @param entity The Organizer entity retrieved from MongoDB.
+     * @return An OrganizerDTO populated with data.
+     */
     public static OrganizerDTO mapOrganizerToDto(Organizer entity) {
         if  (entity == null) {
             return null;
@@ -248,5 +265,65 @@ public class Mapper {
 
     public static OrganizerDTO mapOrganizationToDto(Organization saved) {
         return null;
+    }
+
+    /**
+     * Converts a UserDTO into a UserNode for the Graph Database (Neo4j).
+     * <p>
+     * Extracts minimal info required for the graph: ID, Username, and Coordinates.
+     * </p>
+     *
+     * @param userDto The User DTO source.
+     * @return A UserNode entity for Neo4j.
+     */
+    public static UserNode mapUserToNode(UserDTO userDto) {
+
+        if (userDto == null)
+            return null;
+
+        UserNode userNode = new UserNode();
+        userNode.setId(userDto.getId());
+        userNode.setUsername(userDto.getUsername());
+
+        HomeTownDTO homeTown = userDto.getHomeTown();
+        if (homeTown == null) {
+            userNode.setCoordinates(null);
+            return userNode;
+        }
+
+        LocationDTO location = homeTown.getLoc();
+        if (location == null) {
+            userNode.setCoordinates(null);
+            return userNode;
+        }
+
+        userNode.setCoordinates(location.getCoordinates());
+        return userNode;
+    }
+
+    /**
+     * Converts an AbstractOrganizerDTO (Organizer or Organization) into an OrganizerNode for Neo4j.
+     * <p>
+     * Handles the logic to determine the correct "username" or display name to use in the graph
+     * based on whether the input is an individual Organizer or an Organization.
+     * </p>
+     *
+     * @param organizerDto The source DTO (can be OrganizerDTO or OrganizationDTO).
+     * @return An OrganizerNode entity for Neo4j.
+     */
+    public static OrganizerNode mapOrganizerToNode(AbstracOrganizerDTO organizerDto) {
+        if (organizerDto == null)
+            return null;
+
+        OrganizerNode organizerNode = new OrganizerNode();
+        organizerNode.setId(organizerDto.getId());
+
+        if (organizerDto instanceof OrganizerDTO) {
+            organizerNode.setUsername(((OrganizerDTO) organizerDto).getUsername());
+        } else if (organizerDto instanceof OrganizationDTO) {
+            organizerNode.setUsername(((OrganizationDTO) organizerDto).getName());
+        }
+
+        return organizerNode;
     }
 }

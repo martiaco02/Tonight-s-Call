@@ -1,4 +1,4 @@
-package it.unipi.tonightscall.entity;
+package it.unipi.tonightscall.entity.document;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

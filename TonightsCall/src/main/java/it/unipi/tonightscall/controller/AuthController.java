@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import it.unipi.tonightscall.DTO.*;
 import it.unipi.tonightscall.service.AuthService;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,11 +17,12 @@ import org.springframework.web.bind.annotation.*;
 /**
  * REST Controller handling authentication operations.
  * <p>
- * This controller exposes endpoints for user registration and login (authentication).
+ * This controller exposes endpoints for User, Organizer, and Organization registration and login (authentication).
  * </p>
  */
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Authentication", description = "Endpoints for Registration and Login (Users, Organizers, Organizations)")
 public class AuthController {
 
     private final AuthService authService;
@@ -87,7 +89,25 @@ public class AuthController {
         }
     }
 
-
+    /**
+     * Registers a new Organizer in the system.
+     *
+     * @param organizerDto The organizer information.
+     * @return The created OrganizerDTO if successful.
+     */
+    @Operation(summary = "Register a new Organizer", description = "Creates a new organizer account used for managing events.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Organizer registered successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganizerDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input or Organizer already exists",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
     @PostMapping("organizer/register")
     public ResponseEntity<?> registerOrganizer(@RequestBody OrganizerDTO organizerDto) {
         try {
@@ -98,6 +118,25 @@ public class AuthController {
         }
     }
 
+    /**
+     * Authenticates an Organizer and issues a token.
+     *
+     * @param loginRequest The login credentials (username and password).
+     * @return An AuthResponseDTO containing the JWT token.
+     */
+    @Operation(summary = "Organizer Login", description = "Authenticates an organizer using username and password and returns a JWT token.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Authentication successful, token returned",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid credentials",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
     @PostMapping("organizer/login")
     public ResponseEntity<?> loginOrganizer(@RequestBody LoginRequestDTO loginRequest) {
         try {
@@ -108,6 +147,25 @@ public class AuthController {
         }
     }
 
+    /**
+     * Registers a new Organization in the system.
+     *
+     * @param organizationDto The organization details.
+     * @return The created object (mapped as OrganizerDTO in response) if successful.
+     */
+    @Operation(summary = "Register a new Organization", description = "Creates a new organization profile.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Organization registered successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganizerDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input or Organization already exists",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
     @PostMapping("organization/register")
     public ResponseEntity<?> registerOrganization(@RequestBody OrganizationDTO organizationDto) {
         try {

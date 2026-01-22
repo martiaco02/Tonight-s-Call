@@ -1,6 +1,6 @@
-package it.unipi.tonightscall.repository;
+package it.unipi.tonightscall.repository.document;
 
-import it.unipi.tonightscall.entity.User;
+import it.unipi.tonightscall.entity.document.User;
 import lombok.NonNull;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

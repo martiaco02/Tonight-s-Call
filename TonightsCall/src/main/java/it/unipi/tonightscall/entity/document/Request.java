@@ -1,18 +1,21 @@
-package it.unipi.tonightscall.entity;
+package it.unipi.tonightscall.entity.document;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+/**
+ * Embedded entity representing an organizer request to join an organization
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrganizationForLinking {
+public class Request {
 
     @Field("id")
     private String id;
 
-    @Field("name")
-    private String name;
+    @Field("username")
+    private String username;
 }
