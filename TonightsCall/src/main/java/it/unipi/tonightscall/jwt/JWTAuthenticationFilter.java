@@ -6,13 +6,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Custom security filter that executes once per request.
@@ -64,11 +65,14 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
              // 5. If email is valid and the user is not yet authenticated in the context
              if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        username,
-                        null,
-                        new ArrayList<>()
-                );
+                String role = jwtService.getRoleFromToken(jwt);
+                List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+
+                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                         username,
+                         null,
+                         authorities
+                 );
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
@@ -79,6 +83,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             // If the token is invalid, we do nothing here.
             // The Security Context remains empty, and subsequent filters/security config
             // will handle the 403 Forbidden error if the endpoint requires auth.
+            System.out.println("Validation Error JWT: " + e.getMessage());
         }
 
         // 7. Continue the filter chain

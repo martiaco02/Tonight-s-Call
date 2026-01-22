@@ -30,5 +30,4 @@ public interface OrganizerRepository extends MongoRepository<@NonNull Organizer,
      * @return {@code true} if exists, {@code false} otherwise.
      */
     boolean existsByUsername(String username);
-
 }

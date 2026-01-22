@@ -1,6 +1,7 @@
 package it.unipi.tonightscall.security;
 
 import it.unipi.tonightscall.jwt.JWTAuthenticationFilter;
+import it.unipi.tonightscall.utilies.Roles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -62,6 +63,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // Allow public access to authentication endpoints (Register/Login)
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()   //Allow public access to Swagger/OpenAPI documentation endpoints
+                        .requestMatchers("/organizer/**").hasAuthority(Roles.ORGANIZER_ROLE)
+                        .requestMatchers("/user/**").hasAuthority(Roles.USER_ROLE)
                         .anyRequest().authenticated() // // 3. All other requests require a valid JWT token
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

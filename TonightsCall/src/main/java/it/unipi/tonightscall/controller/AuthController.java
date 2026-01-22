@@ -143,38 +143,36 @@ public class AuthController {
             String token = authService.loginOrganizer(loginRequest.getUsername(), loginRequest.getPassword());
             return ResponseEntity.ok(new AuthResponseDTO(token));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body("Login fallito: " + e.getMessage());
+            return ResponseEntity.status(401).body("Login Failed: " + e.getMessage());
         }
     }
 
     /**
-     * Registers a new Organization in the system.
+     * Authenticates an Organization and issues a token.
      *
-     * @param organizationDto The organization details.
-     * @return The created object (mapped as OrganizerDTO in response) if successful.
+     * @param loginRequest The login credentials (username and password).
+     * @return An AuthResponseDTO containing the JWT token if successful, or an error message if unauthorized.
      */
-    @Operation(summary = "Register a new Organization", description = "Creates a new organization profile.")
+    @Operation(summary = "Organization Login", description = "Authenticates an organization using username and password and returns a JWT token.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Organization registered successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganizerDTO.class))
+                    description = "Authentication successful, token returned",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponseDTO.class))
             ),
             @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid input or Organization already exists",
+                    responseCode = "401",
+                    description = "Invalid credentials",
                     content = @Content(mediaType = "text/plain")
             )
     })
-    @PostMapping("organization/register")
-    public ResponseEntity<?> registerOrganization(@RequestBody OrganizationDTO organizationDto) {
+    @PostMapping("/organization/login")
+    public ResponseEntity<?> loginOrganization(@RequestBody LoginRequestDTO loginRequest) {
         try {
-            OrganizerDTO createdOrganization = authService.registerOrganization(organizationDto);
-            return ResponseEntity.ok(createdOrganization);
+            String token = authService.loginOrganization(loginRequest.getUsername(), loginRequest.getPassword());
+            return ResponseEntity.ok(new AuthResponseDTO(token));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(401).body("Login Failed: " + e.getMessage());
         }
     }
-
-
 }

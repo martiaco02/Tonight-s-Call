@@ -259,12 +259,111 @@ public class Mapper {
         return dto;
     }
 
+    /**
+     * Converts an OrganizationDTO (API object) into an Organization Entity (Database object).
+     * <p>
+     * Maps basic fields and event lists, initializing members and pending requests as empty lists.
+     * </p>
+     *
+     * @param organizationDto The OrganizationDTO received from the client.
+     * @return An Organization entity ready for persistence.
+     */
     public static Organization mapOrganizationToEntity(OrganizationDTO organizationDto) {
-        return null;
+        if (organizationDto == null) {
+            return null;
+        }
+
+        Organization entity = new Organization();
+        entity.setId(organizationDto.getId());
+        entity.setType(organizationDto.getType());
+        entity.setName(organizationDto.getName());
+        entity.setVatNumber(organizationDto.getVatNumber());
+        entity.setEmail(organizationDto.getEmail());
+        List<EventOrganizationDTO> eventDto = organizationDto.getEvents();
+        if (eventDto != null) {
+            List<EventOrganization> events = new ArrayList<>();
+            for (EventOrganizationDTO evDto : eventDto) {
+                EventOrganization ev = new EventOrganization(
+                        evDto.getId(),
+                        evDto.getName()
+                );
+                events.add(ev);
+            }
+            entity.setEvents(events);
+        } else {
+            entity.setEvents(null);
+        }
+
+        entity.setMembers(List.of());
+        entity.setPendingRequests(List.of());
+        return entity;
     }
 
-    public static OrganizerDTO mapOrganizationToDto(Organization saved) {
-        return null;
+    /**
+     * Converts an Organization Entity (Database object) into an OrganizationDTO (API object).
+     * <p>
+     * Populates the DTO with organization details, including members and pending requests.
+     * </p>
+     *
+     * @param entity The Organization entity retrieved from MongoDB.
+     * @return An OrganizationDTO populated with data.
+     */
+    public static OrganizationDTO mapOrganizationToDto(Organization entity) {
+
+        if (entity == null) {
+            return null;
+        }
+
+        OrganizationDTO dto = new OrganizationDTO();
+        dto.setId(entity.getId());
+        dto.setType(entity.getType());
+        dto.setName(entity.getName());
+        dto.setVatNumber(entity.getVatNumber());
+        dto.setEmail(entity.getEmail());
+        List<EventOrganization> eventDto = entity.getEvents();
+        if (eventDto != null) {
+            List<EventOrganizationDTO> events = new ArrayList<>();
+            for (EventOrganization ev : eventDto) {
+                EventOrganizationDTO evDto = new EventOrganizationDTO(
+                        ev.getId(),
+                        ev.getName()
+                );
+                events.add(evDto);
+            }
+            dto.setEvents(events);
+        } else  {
+            dto.setEvents(null);
+        }
+
+        List<Members>  membersDto = entity.getMembers();
+        if (membersDto != null) {
+            List<MembersDTO> members = new ArrayList<>();
+            for (Members member : membersDto) {
+                MembersDTO memberDto = new MembersDTO();
+                memberDto.setId(member.getId());
+                memberDto.setName(member.getName());
+                members.add(memberDto);
+            }
+            dto.setMembers(members);
+        } else {
+            dto.setMembers(null);
+        }
+
+        List<Request> pendingRequests = entity.getPendingRequests();
+        if  (pendingRequests != null) {
+            List<RequestDTO> requests = new ArrayList<>();
+            for (Request req : pendingRequests) {
+                RequestDTO requestDto = new RequestDTO();
+                requestDto.setId(req.getId());
+                requestDto.setUsername(req.getUsername());
+                requests.add(requestDto);
+            }
+            dto.setPendingRequests(requests);
+        } else {
+            dto.setPendingRequests(null);
+        }
+
+        return dto;
     }
 
     /**
@@ -321,9 +420,13 @@ public class Mapper {
         if (organizerDto instanceof OrganizerDTO) {
             organizerNode.setUsername(((OrganizerDTO) organizerDto).getUsername());
         } else if (organizerDto instanceof OrganizationDTO) {
-            organizerNode.setUsername(((OrganizationDTO) organizerDto).getName());
+            organizerNode.setUsername(organizerDto.getName());
         }
 
         return organizerNode;
+    }
+
+    public Mapper() {
+        throw new IllegalStateException("Utility class");
     }
 }

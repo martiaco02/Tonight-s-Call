@@ -57,9 +57,11 @@ public class JWTService {
      * @param username The user's username, which acts as the token's subject.
      * @return A String representation of the signed JWT.
      */
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
+
         return JWT.create()
                 .withSubject(username) // // The "subject" of the token is the username
+                .withClaim("role", role)
                 .withIssuedAt(new Date()) // Creation Date
                 .withExpiresAt(new Date(System.currentTimeMillis() + validityTime)) // Expiration Date
                 .withIssuer(issuer) // Token issuer clain
@@ -74,17 +76,46 @@ public class JWTService {
      * @throws RuntimeException if the token is invalid, expired, or tampered with.
      */
     public String validateTokenAndGetUsername(String token) {
+        DecodedJWT decodedJWT = verify(token);
+        return decodedJWT.getSubject();
+    }
+
+    /**
+     * Extracts the specific "role" claim from a valid JWT.
+     * <p>
+     * This method first verifies the token integrity and then retrieves the custom claim.
+     * </p>
+     *
+     * @param token The raw JWT string.
+     * @return The role string stored in the token
+     * @throws RuntimeException if the token is invalid or expired.
+     */
+    public String getRoleFromToken(String token) {
+        DecodedJWT decodedJWT = verify(token);
+        return decodedJWT.getClaim("role").asString();
+    }
+
+    /**
+     * Internal helper method to verify the token's signature and claims.
+     * <p>
+     * It checks if the token was signed with the correct secret and issuer,
+     * and if it has not expired.
+     * </p>
+     *
+     * @param token The raw JWT string.
+     * @return The {@link DecodedJWT} object if verification is successful.
+     * @throws RuntimeException wrapping a {@link JWTVerificationException} if validation fails.
+     */
+    private DecodedJWT verify(String token) {
         try {
             JWTVerifier verifier = JWT.require(algorithm)
                     .withIssuer(issuer)
                     .build();
-
-            DecodedJWT decodedJWT = verifier.verify(token);
-            return decodedJWT.getSubject(); // return the username
+            return verifier.verify(token);
         } catch (JWTVerificationException exception) {
-            // Invalid token (bad signature, expired, malformed)
             throw new RuntimeException("Invalid or expired token");
         }
     }
+
 
 }
