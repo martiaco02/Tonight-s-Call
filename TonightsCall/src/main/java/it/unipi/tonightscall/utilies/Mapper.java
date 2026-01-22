@@ -1,13 +1,7 @@
 package it.unipi.tonightscall.utilies;
 
-import it.unipi.tonightscall.DTO.HomeTownDTO;
-import it.unipi.tonightscall.DTO.LocationDTO;
-import it.unipi.tonightscall.DTO.ReviewEventDTO;
-import it.unipi.tonightscall.DTO.UserDTO;
-import it.unipi.tonightscall.entity.HomeTown;
-import it.unipi.tonightscall.entity.Location;
-import it.unipi.tonightscall.entity.ReviewEvent;
-import it.unipi.tonightscall.entity.User;
+import it.unipi.tonightscall.DTO.*;
+import it.unipi.tonightscall.entity.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -143,5 +137,116 @@ public class Mapper {
         }
 
         return entity;
+    }
+
+    public static Organizer mapOrganizerToEntity(OrganizerDTO dto) {
+
+        if (dto == null) {
+            return null;
+        }
+
+        Organizer entity = new Organizer();
+        entity.setId(dto.getId());
+        entity.setType(dto.getType());
+        entity.setName(dto.getName());
+        entity.setVatNumber(dto.getVatNumber());
+        entity.setEmail(dto.getEmail());
+
+        List<EventOrganizationDTO> eventDto = dto.getEvents();
+        if (eventDto != null) {
+            List<EventOrganization> events = new ArrayList<>();
+            for (EventOrganizationDTO evDto : eventDto) {
+                EventOrganization ev = new EventOrganization(
+                        evDto.getId(),
+                        evDto.getName()
+                );
+                events.add(ev);
+            }
+            entity.setEvents(events);
+        } else {
+            entity.setEvents(null);
+        }
+
+        entity.setLastName(dto.getLastName());
+        entity.setUsername(dto.getUsername());
+        entity.setDateOfBirth(dto.getDateOfBirth());
+        entity.setPassword(dto.getPassword());
+
+        List<OrganizationForLinkingDTO> organizationsDto = dto.getOrganizations();
+        if (organizationsDto != null) {
+
+            List<OrganizationForLinking> organizations = new ArrayList<>();
+            for (OrganizationForLinkingDTO orgDto : organizationsDto) {
+                OrganizationForLinking org = new OrganizationForLinking(
+                    orgDto.getId(),
+                    orgDto.getName()
+                );
+                organizations.add(org);
+            }
+            entity.setOrganizations(organizations);
+
+        } else {
+            entity.setOrganizations(null);
+        }
+        return entity;
+    }
+
+    public static OrganizerDTO mapOrganizerToDto(Organizer entity) {
+        if  (entity == null) {
+            return null;
+        }
+
+        OrganizerDTO dto = new OrganizerDTO();
+        dto.setId(entity.getId());
+        dto.setName(entity.getName());
+        dto.setVatNumber(entity.getVatNumber());
+        dto.setEmail(entity.getEmail());
+        dto.setType(entity.getType());
+
+        List<EventOrganization> eventsEntity = entity.getEvents();
+        if (eventsEntity != null) {
+            List<EventOrganizationDTO> events = new ArrayList<>();
+            for (EventOrganization ev : eventsEntity) {
+                events.add(
+                        new EventOrganizationDTO(
+                                ev.getId(),
+                                ev.getName()
+                        )
+                );
+            }
+            dto.setEvents(events);
+        } else {
+            dto.setEvents(null);
+        }
+
+        dto.setLastName(entity.getLastName());
+        dto.setUsername(entity.getUsername());
+        dto.setDateOfBirth(entity.getDateOfBirth());
+        dto.setPassword(entity.getPassword());
+
+        List<OrganizationForLinking> organizationLinkingentity =  entity.getOrganizations();
+        if (organizationLinkingentity != null) {
+            List<OrganizationForLinkingDTO> organizations = new ArrayList<>();
+            for (OrganizationForLinking org : organizationLinkingentity) {
+                OrganizationForLinkingDTO orgDto = new OrganizationForLinkingDTO(
+                        org.getId(),
+                        org.getName()
+                );
+                organizations.add(orgDto);
+            }
+            dto.setOrganizations(organizations);
+        } else {
+            dto.setOrganizations(null);
+        }
+
+        return dto;
+    }
+
+    public static Organization mapOrganizationToEntity(OrganizationDTO organizationDto) {
+        return null;
+    }
+
+    public static OrganizerDTO mapOrganizationToDto(Organization saved) {
+        return null;
     }
 }

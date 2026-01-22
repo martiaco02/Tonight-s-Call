@@ -5,9 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import it.unipi.tonightscall.DTO.AuthResponseDTO;
-import it.unipi.tonightscall.DTO.LoginRequestDTO;
-import it.unipi.tonightscall.DTO.UserDTO;
+import it.unipi.tonightscall.DTO.*;
 import it.unipi.tonightscall.service.AuthService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,9 +49,9 @@ public class AuthController {
             )
     })
     @PostMapping("user/register")
-    public ResponseEntity<?> register(@RequestBody UserDTO userDto) {
+    public ResponseEntity<?> registerUser(@RequestBody UserDTO userDto) {
         try {
-            UserDTO createdUser = authService.register(userDto);
+            UserDTO createdUser = authService.registerUser(userDto);
             return ResponseEntity.ok(createdUser);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -80,15 +78,45 @@ public class AuthController {
             )
     })
     @PostMapping("user/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest) {
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequestDTO loginRequest) {
         try {
-            String token = authService.login(loginRequest.getUsername(), loginRequest.getPassword());
+            String token = authService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
             return ResponseEntity.ok(new AuthResponseDTO(token));
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).body("Login fallito: " + e.getMessage());
         }
     }
 
+
+    @PostMapping("organizer/register")
+    public ResponseEntity<?> registerOrganizer(@RequestBody OrganizerDTO organizerDto) {
+        try {
+            OrganizerDTO createdOrganizer = authService.registerOrganizer(organizerDto);
+            return ResponseEntity.ok(createdOrganizer);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("organizer/login")
+    public ResponseEntity<?> loginOrganizer(@RequestBody LoginRequestDTO loginRequest) {
+        try {
+            String token = authService.loginOrganizer(loginRequest.getUsername(), loginRequest.getPassword());
+            return ResponseEntity.ok(new AuthResponseDTO(token));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body("Login fallito: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("organization/register")
+    public ResponseEntity<?> registerOrganization(@RequestBody OrganizationDTO organizationDto) {
+        try {
+            OrganizerDTO createdOrganization = authService.registerOrganization(organizationDto);
+            return ResponseEntity.ok(createdOrganization);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
 
 }
