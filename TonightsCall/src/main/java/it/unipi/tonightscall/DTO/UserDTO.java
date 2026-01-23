@@ -105,7 +105,7 @@ public class UserDTO {
      */
     @JsonProperty("home_town")
     @Schema(description = "Nested document with the information of the User's home town")
-    private HomeTownDTO homeTown;
+    private AddressDTO homeTown;
 
     /**
      * A list of events reviewed by this user.

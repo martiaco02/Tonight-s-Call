@@ -42,7 +42,7 @@ public class EventDTO {
      */
     @JsonProperty("position")
     @Schema(description = "Geographical location of the event")
-    private HomeTownDTO position;
+    private AddressDTO position;
 
     /**
      * Map of ticket types and their costs.

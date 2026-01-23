@@ -14,13 +14,19 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HomeTown {
+public class Address {
 
     /**
      * The name of the hometown.
      */
-    @Field("name")
-    private String name;
+    @Field("city_name")
+    private String cityName;
+
+    /**
+     * The full address
+     */
+    @Field("full_address")
+    private String fullAddress;
 
     /**
      * The geospatial location data.

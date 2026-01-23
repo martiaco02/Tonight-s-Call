@@ -89,7 +89,7 @@ public class User {
      * Mapped to the "home_town" field in MongoDB.
      */
     @Field("home_town")
-    private HomeTown homeTown;
+    private Address address;
 
     /**
      * List of embedded documents representing reviews written by the user.

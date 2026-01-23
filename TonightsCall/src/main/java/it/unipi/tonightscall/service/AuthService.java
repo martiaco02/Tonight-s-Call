@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -70,13 +71,31 @@ public class AuthService {
      *
      * @param userDto The data transfer object containing user details.
      * @return The DTO of the newly created user (without the password).
-     * @throws RuntimeException If the username already exists.
+     * @throws RuntimeException If the username already exists or the data are not consistent.
      */
     @Transactional
     public UserDTO registerUser(UserDTO userDto) {
+
+        if (userDto.getUsername() == null)
+            throw new RuntimeException("Username is required!");
+
         if (userRepository.existsByUsername(userDto.getUsername())) {
             throw new RuntimeException("The username " + userDto.getUsername() + " is already taken.");
         }
+
+        if (userDto.getPassword() == null)
+            throw new RuntimeException("Password is required!");
+
+        if (userDto.getEmail() == null)
+            throw new RuntimeException("Email is required!");
+
+        if (userDto.getInterests() == null ||  userDto.getInterests().isEmpty())
+            throw new RuntimeException("At least one interest is required!");
+
+        if (userDto.getHomeTown() == null)
+            throw new RuntimeException("HomeTown is required!");
+
+        userDto.setReviewedEvents(new ArrayList<>());
 
         User entity = Mapper.mapUserToEntity(userDto);
         entity.setPassword(passwordEncoder.encode(userDto.getPassword()));

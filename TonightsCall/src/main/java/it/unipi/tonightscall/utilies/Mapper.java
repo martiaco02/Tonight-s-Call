@@ -44,15 +44,15 @@ public class Mapper {
         dto.setInterests(entity.getInterests());
         dto.setFriends(entity.getFriends());
 
-        HomeTown homeTownEntity = entity.getHomeTown();
+        Address addressEntity = entity.getAddress();
 
-        if  (homeTownEntity != null) {
-            Location locationEntity = homeTownEntity.getLocation();
+        if  (addressEntity != null) {
+            Location locationEntity = addressEntity.getLocation();
 
             if (locationEntity != null) {
                 dto.setHomeTown(
-                        new HomeTownDTO(
-                                homeTownEntity.getName(),
+                        new AddressDTO(
+                                addressEntity.getCityName(),
                                 new LocationDTO(
                                         locationEntity.getType(),
                                         locationEntity.getCoordinates()
@@ -62,14 +62,14 @@ public class Mapper {
             }
            else {
                dto.setHomeTown(
-                       new HomeTownDTO(
-                               homeTownEntity.getName(),
+                       new AddressDTO(
+                               addressEntity.getCityName(),
                                null
                        )
                );
             }
         } else {
-            dto.setHomeTown(new HomeTownDTO());
+            dto.setHomeTown(new AddressDTO());
         }
 
         List<ReviewEvent> reviewedEvents = entity.getReviewedEvents();
@@ -117,8 +117,8 @@ public class Mapper {
         entity.setFriends(dto.getFriends());
 
         if (dto.getHomeTown() != null) {
-            HomeTown ht = new HomeTown();
-            ht.setName(dto.getHomeTown().getName());
+            Address ht = new Address();
+            ht.setCityName(dto.getHomeTown().getCityName());
 
             if (dto.getHomeTown().getLoc() != null) {
                 Location loc = new Location();
@@ -126,9 +126,9 @@ public class Mapper {
                 loc.setCoordinates(dto.getHomeTown().getLoc().getCoordinates());
                 ht.setLocation(loc);
             }
-            entity.setHomeTown(ht);
+            entity.setAddress(ht);
         } else {
-            entity.setHomeTown(new HomeTown());
+            entity.setAddress(new Address());
         }
 
         if (dto.getReviewedEvents() != null) {
@@ -392,7 +392,7 @@ public class Mapper {
         userNode.setId(userDto.getId());
         userNode.setUsername(userDto.getUsername());
 
-        HomeTownDTO homeTown = userDto.getHomeTown();
+        AddressDTO homeTown = userDto.getHomeTown();
         if (homeTown != null && homeTown.getLoc() != null) {
             userNode.setCoordinates(homeTown.getLoc().getCoordinates());
         } else {
@@ -467,23 +467,23 @@ public class Mapper {
             entity.setStartingTimes(new HashMap<>());
         }
 
-        HomeTownDTO homeTownDTO = eventDTO.getPosition();
-        if (homeTownDTO != null) {
-            HomeTown homeTown = new HomeTown();
-            homeTown.setName(homeTownDTO.getName());
-            LocationDTO locationDTO = homeTownDTO.getLoc();
+        AddressDTO addressDTO = eventDTO.getPosition();
+        if (addressDTO != null) {
+            Address address = new Address();
+            address.setCityName(addressDTO.getCityName());
+            LocationDTO locationDTO = addressDTO.getLoc();
             if (locationDTO != null) {
                 Location location = new Location(
                         locationDTO.getType(),
                         locationDTO.getCoordinates()
                 );
-                homeTown.setLocation(location);
+                address.setLocation(location);
             } else {
-                homeTown.setLocation(new Location());
+                address.setLocation(new Location());
             }
-            entity.setPosition(homeTown);
+            entity.setPosition(address);
         } else {
-            entity.setPosition(new  HomeTown());
+            entity.setPosition(new Address());
         }
 
         List<ReviewDTO> reviewsDTO = eventDTO.getReviews();
@@ -585,10 +585,10 @@ public class Mapper {
             eventDTO.setStartingTimes(new HashMap<>());
         }
 
-        HomeTown position = entity.getPosition();
+        Address position = entity.getPosition();
         if (position != null) {
-            HomeTownDTO positionDTO = new HomeTownDTO();
-            positionDTO.setName(position.getName());
+            AddressDTO positionDTO = new AddressDTO();
+            positionDTO.setCityName(position.getCityName());
             Location location =  position.getLocation();
             if (location != null) {
                 LocationDTO locationDTO = new LocationDTO();
@@ -600,7 +600,7 @@ public class Mapper {
             }
             eventDTO.setPosition(positionDTO);
         } else {
-            eventDTO.setPosition(new  HomeTownDTO());
+            eventDTO.setPosition(new AddressDTO());
         }
 
         List<Review>  reviews = entity.getReviews();

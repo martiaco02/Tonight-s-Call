@@ -116,7 +116,7 @@ public class OrganizerService {
      * @param eventDTO The Event's details
      * @param username Username of the organizer
      * @return The created EventDTO
-     * @throws RuntimeException If the organization name is not found or if the organizationNode is not found
+     * @throws RuntimeException If the organization name is not found or if the organizationNode is not found or if the data are not consistent
      */
     @Transactional
     public EventDTO registerEvent(EventDTO eventDTO, String username, String role) {
@@ -131,6 +131,24 @@ public class OrganizerService {
                     .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
         } else {
             throw new RuntimeException("Invalid role");
+        }
+
+        if (eventDTO.getEventName() == null || eventDTO.getEventName().isEmpty() || eventDTO.getEventName().isBlank()) {
+            throw new RuntimeException("Event Name is empty");
+        }
+
+        if (eventDTO.getPosition() == null) {
+            throw new RuntimeException("Position is empty");
+        }
+
+        if (eventDTO.getStartingDate() == null) {
+            throw new RuntimeException("Starting Date is empty");
+        }
+
+        if (eventDTO.getEndingDate() != null) {
+            if (eventDTO.getStartingDate().isBefore(eventDTO.getEndingDate())) {
+                throw new RuntimeException("Ending Date is before Start Date");
+            }
         }
 
         Event event = Mapper.mapEventToEntity(eventDTO);

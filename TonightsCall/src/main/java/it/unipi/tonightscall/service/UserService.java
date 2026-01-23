@@ -13,9 +13,7 @@ import it.unipi.tonightscall.repository.graph.UserGraphRepository;
 import it.unipi.tonightscall.utilies.Mapper;
 import org.springframework.stereotype.Service;
 
-import javax.print.Doc;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 @Service
 public class UserService {
@@ -75,7 +73,7 @@ public class UserService {
                 ticket_type,
                 me.getEmail(),
                 me.getUsername(),
-                me.getHomeTown().getName(),
+                me.getAddress().getCityName(),
                 me.getDateOfBirth()
         ));
 

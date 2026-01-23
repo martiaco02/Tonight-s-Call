@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * Data Transfer Object (DTO) representing the User's hometown information.
@@ -16,14 +17,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Model representing the user's hometown location")
-public class HomeTownDTO {
+public class AddressDTO {
 
     /**
      * The name of the city or town.
      */
-    @JsonProperty("name")
+    @JsonProperty("city_name")
     @Schema(description = "Name of the user's Home town", example = "Porcari")
-    private String name;
+    private String cityName;
+
+    /**
+     * The full address
+     */
+    @JsonProperty("full_address")
+    @Schema(description = "Full address of the user's Home town", example = "Via Leccio 38, Porcari, Lucca")
+    private String fullAddress;
 
     /**
      * The geospatial coordinates of the hometown.

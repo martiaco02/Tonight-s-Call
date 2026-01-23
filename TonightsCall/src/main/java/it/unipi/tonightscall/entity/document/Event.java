@@ -24,7 +24,7 @@ public class Event {
     private String eventName;
 
     @Field("position")
-    private HomeTown position;
+    private Address position;
 
     @Field("ticket_price")
     private Map<String, Double> ticketPrice;
