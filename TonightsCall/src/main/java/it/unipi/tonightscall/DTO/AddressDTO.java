@@ -27,7 +27,7 @@ public class AddressDTO {
     private String cityName;
 
     /**
-     * The full address
+     * The complete address
      */
     @JsonProperty("full_address")
     @Schema(description = "Full address of the user's Home town", example = "Via Leccio 38, Porcari, Lucca")
