@@ -14,6 +14,8 @@ import it.unipi.tonightscall.utilies.Mapper;
 import org.springframework.stereotype.Service;
 
 import javax.print.Doc;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 @Service
 public class UserService {
@@ -112,10 +114,17 @@ public class UserService {
         EventNode eventNode = eventGraphRepository.findById(eventID)
                 .orElseThrow(() -> new RuntimeException("Event Node not found!"));
 
+        System.out.println("--------\nMyNode: " +myNode);
+
         ReviewRelationship rr = new ReviewRelationship();
         rr.setEvent(eventNode);
         rr.setScore(score);
+        if (myNode.getReviews() == null) {
+            myNode.setReviews(new ArrayList<>());
+        }
         myNode.getReviews().add(rr);
+
+        System.out.println("--------\nMyNode: " +myNode.getReviews());
 
         userGraphRepository.save(myNode);
 

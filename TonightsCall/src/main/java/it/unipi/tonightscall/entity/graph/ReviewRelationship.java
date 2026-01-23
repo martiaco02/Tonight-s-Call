@@ -1,9 +1,6 @@
 package it.unipi.tonightscall.entity.graph;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Generated;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.RelationshipId;
 import org.springframework.data.neo4j.core.schema.RelationshipProperties;
@@ -17,10 +14,12 @@ public class ReviewRelationship {
 
     @RelationshipId
     @GeneratedValue
-    private long id;
+    private Long id;
 
     private int score;
 
     @TargetNode
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private EventNode event;
 }
