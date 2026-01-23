@@ -141,7 +141,7 @@ public class AuthService {
         entity.setPassword(passwordEncoder.encode(organizerDto.getPassword()));
         Organizer saved = organizerRepository.save(entity);
 
-        OrganizerNode organizerNode = Mapper.mapOrganizerToNode(organizerDto);
+        OrganizerNode organizerNode = Mapper.mapOrganizerToNode(entity);
         OrganizerNode savedNode = organizerGraphRepository.save(organizerNode);
 
         return Mapper.mapOrganizerToDto(saved);

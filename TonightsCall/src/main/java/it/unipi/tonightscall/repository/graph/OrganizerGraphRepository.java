@@ -4,6 +4,8 @@ import it.unipi.tonightscall.entity.graph.OrganizerNode;
 import lombok.NonNull;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 
+import java.util.Optional;
+
 /**
  * Neo4j Repository for managing {@link OrganizerNode} entities.
  * <p>

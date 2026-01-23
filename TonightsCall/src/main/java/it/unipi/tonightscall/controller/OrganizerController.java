@@ -6,8 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import it.unipi.tonightscall.DTO.EventDTO;
 import it.unipi.tonightscall.DTO.OrganizationDTO;
-import it.unipi.tonightscall.service.ControllerService;
+import it.unipi.tonightscall.service.OrganizerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,9 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Organizer Operations", description = "Endpoints for actions performed by authenticated Organizers")
 public class OrganizerController {
 
-    private final ControllerService controllerService;
+    private final OrganizerService controllerService;
 
-    public OrganizerController(ControllerService controllerService) {
+    public OrganizerController(OrganizerService controllerService) {
         this.controllerService = controllerService;
     }
 
@@ -64,10 +65,52 @@ public class OrganizerController {
     @PostMapping("/registerOrganization")
     public ResponseEntity<?> registerOrganization(@RequestBody OrganizationDTO organizationDTO, Authentication authentication) {
         try {
-            OrganizationDTO createdUser = controllerService.registerOrganization(organizationDTO, authentication.getName());
-            return ResponseEntity.ok(createdUser);
+            OrganizationDTO createdOrganization = controllerService.registerOrganization(organizationDTO, authentication.getName());
+            return ResponseEntity.ok(createdOrganization);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    /**
+     * Registers a new Event created by the authenticated Organizer.
+     *
+     * @param eventDTO       The details of the event to be created.
+     * @param authentication The security context containing the current user's details.
+     * @return The created EventDTO if successful.
+     */
+    @Operation(
+            summary = "Create a new Event",
+            description = "Allows an authenticated Organizer (or Organization) to create and publish a new event."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Event created successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = EventDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input or creation failed",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
+    @PostMapping("/registerEvent")
+    public ResponseEntity<?> registerEvent(@RequestBody EventDTO eventDTO, Authentication authentication) {
+        try{
+            EventDTO createdEvent = controllerService.registerEvent(
+                    eventDTO,
+                    authentication.getName(),
+                    authentication.getAuthorities().iterator().next().getAuthority());
+            return ResponseEntity.ok(createdEvent);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

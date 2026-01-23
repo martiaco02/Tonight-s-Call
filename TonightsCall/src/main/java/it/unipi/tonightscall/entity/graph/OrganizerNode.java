@@ -5,6 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Relationship;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Neo4j Node entity representing an Organizer.
@@ -29,4 +33,7 @@ public class OrganizerNode {
      * The username of the organizer.
      */
     private String username;
+
+    @Relationship(type = ":ORGANIZED", direction = Relationship.Direction.OUTGOING)
+    private Set<EventNode> organized = new HashSet<>();
 }

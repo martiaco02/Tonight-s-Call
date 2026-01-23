@@ -5,9 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Relationship;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Neo4j Node entity representing an Event.
@@ -35,9 +38,14 @@ public class EventNode {
     private String eventName;
 
     /**
-     * The date on which the event takes place.
+     * The date from  the event takes place.
      */
-    private LocalDate date;
+    private LocalDate startingDate;
+
+    /**
+     * The date when the event ends.
+     */
+    private LocalDate endingDate;
 
     /**
      * Geospatial coordinates of the event.
@@ -46,4 +54,7 @@ public class EventNode {
      * </p>
      */
     private List<Double> coordinates;
+
+    @Relationship(type = ":IS_ABOUT", direction = Relationship.Direction.OUTGOING)
+    private Set<TopicNode> categories = new HashSet<>();
 }

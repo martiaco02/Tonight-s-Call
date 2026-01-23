@@ -63,7 +63,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // Allow public access to authentication endpoints (Register/Login)
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()   //Allow public access to Swagger/OpenAPI documentation endpoints
-                        .requestMatchers("/organizer/**").hasAuthority(Roles.ORGANIZER_ROLE)
+                        .requestMatchers("/organizer/registerOrganization").hasAuthority(Roles.ORGANIZER_ROLE)
+                        .requestMatchers("/organizer/**").hasAnyAuthority(Roles.ORGANIZER_ROLE, Roles.ORGANIZATION_ROLE)
                         .requestMatchers("/user/**").hasAuthority(Roles.USER_ROLE)
                         .anyRequest().authenticated() // // 3. All other requests require a valid JWT token
                 )

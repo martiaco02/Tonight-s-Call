@@ -2,11 +2,14 @@ package it.unipi.tonightscall.utilies;
 
 import it.unipi.tonightscall.DTO.*;
 import it.unipi.tonightscall.entity.document.*;
+import it.unipi.tonightscall.entity.graph.EventNode;
 import it.unipi.tonightscall.entity.graph.OrganizerNode;
 import it.unipi.tonightscall.entity.graph.UserNode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class for mapping objects between the Data Transfer Object (DTO) layer
@@ -66,7 +69,7 @@ public class Mapper {
                );
             }
         } else {
-            dto.setHomeTown(null);
+            dto.setHomeTown(new HomeTownDTO());
         }
 
         List<ReviewEvent> reviewedEvents = entity.getReviewedEvents();
@@ -81,9 +84,8 @@ public class Mapper {
             dto.setReviewedEvents(reviewedEventsDTO);
 
         } else {
-            dto.setReviewedEvents(null);
+            dto.setReviewedEvents(new ArrayList<>());
         }
-
 
         return dto;
     }
@@ -125,6 +127,8 @@ public class Mapper {
                 ht.setLocation(loc);
             }
             entity.setHomeTown(ht);
+        } else {
+            entity.setHomeTown(new HomeTown());
         }
 
         if (dto.getReviewedEvents() != null) {
@@ -136,6 +140,8 @@ public class Mapper {
                 events.add(rev);
             }
             entity.setReviewedEvents(events);
+        } else {
+            entity.setReviewedEvents(new ArrayList<>());
         }
 
         return entity;
@@ -175,7 +181,7 @@ public class Mapper {
             }
             entity.setEvents(events);
         } else {
-            entity.setEvents(null);
+            entity.setEvents(new ArrayList<>());
         }
 
         entity.setLastName(dto.getLastName());
@@ -197,7 +203,7 @@ public class Mapper {
             entity.setOrganizations(organizations);
 
         } else {
-            entity.setOrganizations(null);
+            entity.setOrganizations(new ArrayList<>());
         }
         return entity;
     }
@@ -233,7 +239,7 @@ public class Mapper {
             }
             dto.setEvents(events);
         } else {
-            dto.setEvents(null);
+            dto.setEvents(new ArrayList<>());
         }
 
         dto.setLastName(entity.getLastName());
@@ -253,7 +259,7 @@ public class Mapper {
             }
             dto.setOrganizations(organizations);
         } else {
-            dto.setOrganizations(null);
+            dto.setOrganizations(new ArrayList<>());
         }
 
         return dto;
@@ -279,6 +285,7 @@ public class Mapper {
         entity.setName(organizationDto.getName());
         entity.setVatNumber(organizationDto.getVatNumber());
         entity.setEmail(organizationDto.getEmail());
+
         List<EventOrganizationDTO> eventDto = organizationDto.getEvents();
         if (eventDto != null) {
             List<EventOrganization> events = new ArrayList<>();
@@ -291,7 +298,7 @@ public class Mapper {
             }
             entity.setEvents(events);
         } else {
-            entity.setEvents(null);
+            entity.setEvents(new ArrayList<>());
         }
 
         entity.setMembers(List.of());
@@ -320,6 +327,7 @@ public class Mapper {
         dto.setName(entity.getName());
         dto.setVatNumber(entity.getVatNumber());
         dto.setEmail(entity.getEmail());
+
         List<EventOrganization> eventDto = entity.getEvents();
         if (eventDto != null) {
             List<EventOrganizationDTO> events = new ArrayList<>();
@@ -332,7 +340,7 @@ public class Mapper {
             }
             dto.setEvents(events);
         } else  {
-            dto.setEvents(null);
+            dto.setEvents(new ArrayList<>());
         }
 
         List<Members>  membersDto = entity.getMembers();
@@ -346,7 +354,7 @@ public class Mapper {
             }
             dto.setMembers(members);
         } else {
-            dto.setMembers(null);
+            dto.setMembers(new ArrayList<>());
         }
 
         List<Request> pendingRequests = entity.getPendingRequests();
@@ -360,7 +368,7 @@ public class Mapper {
             }
             dto.setPendingRequests(requests);
         } else {
-            dto.setPendingRequests(null);
+            dto.setPendingRequests(new ArrayList<>());
         }
 
         return dto;
@@ -385,18 +393,12 @@ public class Mapper {
         userNode.setUsername(userDto.getUsername());
 
         HomeTownDTO homeTown = userDto.getHomeTown();
-        if (homeTown == null) {
+        if (homeTown != null && homeTown.getLoc() != null) {
+            userNode.setCoordinates(homeTown.getLoc().getCoordinates());
+        } else {
             userNode.setCoordinates(null);
-            return userNode;
         }
 
-        LocationDTO location = homeTown.getLoc();
-        if (location == null) {
-            userNode.setCoordinates(null);
-            return userNode;
-        }
-
-        userNode.setCoordinates(location.getCoordinates());
         return userNode;
     }
 
@@ -410,17 +412,17 @@ public class Mapper {
      * @param organizerDto The source DTO (can be OrganizerDTO or OrganizationDTO).
      * @return An OrganizerNode entity for Neo4j.
      */
-    public static OrganizerNode mapOrganizerToNode(AbstracOrganizerDTO organizerDto) {
-        if (organizerDto == null)
+    public static OrganizerNode mapOrganizerToNode(AbstracOrganizer organizer) {
+        if (organizer == null)
             return null;
 
         OrganizerNode organizerNode = new OrganizerNode();
-        organizerNode.setId(organizerDto.getId());
+        organizerNode.setId(organizer.getId());
 
-        if (organizerDto instanceof OrganizerDTO) {
-            organizerNode.setUsername(((OrganizerDTO) organizerDto).getUsername());
-        } else if (organizerDto instanceof OrganizationDTO) {
-            organizerNode.setUsername(organizerDto.getName());
+        if (organizer instanceof Organizer) {
+            organizerNode.setUsername(((Organizer) organizer).getUsername());
+        } else if (organizer instanceof Organization) {
+            organizerNode.setUsername(organizer.getName());
         }
 
         return organizerNode;
@@ -428,5 +430,207 @@ public class Mapper {
 
     public Mapper() {
         throw new IllegalStateException("Utility class");
+    }
+
+    public static Event mapEventToEntity(EventDTO eventDTO) {
+        if (eventDTO == null)
+            return null;
+
+        Event entity = new Event();
+        entity.setId(eventDTO.getId());
+        entity.setEventName(eventDTO.getEventName());
+        entity.setStartingDate(eventDTO.getStartingDate());
+        entity.setEndingDate(eventDTO.getEndingDate());
+        entity.setDescription(eventDTO.getDescription());
+        entity.setUrlImg(eventDTO.getUrlImg());
+        entity.setTotalReview(eventDTO.getTotalReview());
+        entity.setEventScore(eventDTO.getEventScore());
+        Map<String, Double> ticketPriceDTO = eventDTO.getTicketPrice();
+
+        if (ticketPriceDTO != null) {
+            entity.setTicketPrice(Map.copyOf(ticketPriceDTO));
+        } else {
+            entity.setTicketPrice(new HashMap<>());
+        }
+
+        List<String> categoriesDTO = eventDTO.getCategories();
+        if  (categoriesDTO != null) {
+            entity.setCategories(List.copyOf(categoriesDTO));
+        } else {
+            entity.setCategories(new ArrayList<>());
+        }
+
+        Map<String, Object> startingTimesDTO = eventDTO.getStartingTimes();
+        if (startingTimesDTO != null) {
+            entity.setStartingTimes(Map.copyOf(startingTimesDTO));
+        } else {
+            entity.setStartingTimes(new HashMap<>());
+        }
+
+        HomeTownDTO homeTownDTO = eventDTO.getPosition();
+        if (homeTownDTO != null) {
+            HomeTown homeTown = new HomeTown();
+            homeTown.setName(homeTownDTO.getName());
+            LocationDTO locationDTO = homeTownDTO.getLoc();
+            if (locationDTO != null) {
+                Location location = new Location(
+                        locationDTO.getType(),
+                        locationDTO.getCoordinates()
+                );
+                homeTown.setLocation(location);
+            } else {
+                homeTown.setLocation(new Location());
+            }
+            entity.setPosition(homeTown);
+        } else {
+            entity.setPosition(new  HomeTown());
+        }
+
+        List<ReviewDTO> reviewsDTO = eventDTO.getReviews();
+        if (reviewsDTO != null) {
+            List<Review> reviews = new ArrayList<>();
+            for (ReviewDTO reviewDTO : reviewsDTO) {
+                Review review = new Review();
+                review.setScore(reviewDTO.getScore());
+                review.setText(reviewDTO.getText());
+                review.setUsername(reviewDTO.getUsername());
+                reviews.add(review);
+            }
+            entity.setReviews(reviews);
+        } else {
+            entity.setReviews(new ArrayList<>());
+        }
+
+        List<AttendentDTO> attendeesDTO =  eventDTO.getAttendees();
+        if (attendeesDTO != null) {
+            List<Attendent> attendees = new ArrayList<>();
+            for (AttendentDTO attendeeDTO : attendeesDTO) {
+                Attendent attendee = new Attendent();
+                attendee.setId(attendeeDTO.getId());
+                attendee.setTicketType(attendeeDTO.getTicketType());
+                attendee.setEmail(attendeeDTO.getEmail());
+                attendee.setUsername(attendeeDTO.getUsername());
+                attendee.setHomeTown(attendeeDTO.getHomeTown());
+                attendee.setDateOfBirth(attendeeDTO.getDateOfBirth());
+                attendees.add(attendee);
+            }
+            entity.setAttendees(attendees);
+        } else {
+            entity.setAttendees(new ArrayList<>());
+        }
+
+        StatisticsDTO statisticsDTO = eventDTO.getStatistic();
+        if (statisticsDTO != null) {
+            Statistics statistics = new Statistics();
+            statistics.setDateUpdate(statisticsDTO.getDateUpdate());
+            statistics.setAverageAge(statisticsDTO.getAverageAge());
+            statistics.setPredictedIncome(statisticsDTO.getPredictedIncome());
+            statistics.setOriginAttenders(Map.copyOf(statisticsDTO.getOriginAttenders()));
+            statistics.setTotalAttenders(statisticsDTO.getTotalAttenders());
+            entity.setStatistics(statistics);
+        } else {
+            entity.setStatistics(null);
+        }
+
+        return entity;
+    }
+
+    public static EventNode mapEventToNode(Event entity) {
+        EventNode eventNode = new EventNode();
+        eventNode.setId(entity.getId());
+        eventNode.setEventName(entity.getEventName());
+        eventNode.setStartingDate(entity.getStartingDate());
+        eventNode.setEndingDate(entity.getEndingDate());
+        if (entity.getPosition() != null && entity.getPosition().getLocation() != null)
+            eventNode.setCoordinates(entity.getPosition().getLocation().getCoordinates());
+        else
+            eventNode.setCoordinates(null);
+        return eventNode;
+    }
+
+    public static EventDTO mapEventToDTO(Event entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        EventDTO eventDTO = new EventDTO();
+
+        eventDTO.setId(entity.getId());
+        eventDTO.setEventName(entity.getEventName());
+        eventDTO.setStartingDate(entity.getStartingDate());
+        eventDTO.setEndingDate(entity.getEndingDate());
+        eventDTO.setDescription(entity.getDescription());
+        eventDTO.setUrlImg(entity.getUrlImg());
+        eventDTO.setTotalReview(entity.getTotalReview());
+        eventDTO.setEventScore(entity.getEventScore());
+
+        List<String> categories = entity.getCategories();
+        if (categories != null) {
+            eventDTO.setCategories(List.copyOf(categories));
+        } else {
+            eventDTO.setCategories(new ArrayList<>());
+        }
+
+        Map<String, Double> ticketPrice = entity.getTicketPrice();
+        if (ticketPrice != null) {
+            eventDTO.setTicketPrice(Map.copyOf(ticketPrice));
+        }  else {
+            eventDTO.setTicketPrice(new HashMap<>());
+        }
+
+        Map<String, Object> startingTimes = entity.getStartingTimes();
+        if (startingTimes != null) {
+            eventDTO.setStartingTimes(Map.copyOf(startingTimes));
+        } else {
+            eventDTO.setStartingTimes(new HashMap<>());
+        }
+
+        HomeTown position = entity.getPosition();
+        if (position != null) {
+            HomeTownDTO positionDTO = new HomeTownDTO();
+            positionDTO.setName(position.getName());
+            Location location =  position.getLocation();
+            if (location != null) {
+                LocationDTO locationDTO = new LocationDTO();
+                locationDTO.setType(location.getType());
+                locationDTO.setCoordinates(location.getCoordinates());
+                positionDTO.setLoc(locationDTO);
+            } else {
+                positionDTO.setLoc(new LocationDTO());
+            }
+            eventDTO.setPosition(positionDTO);
+        } else {
+            eventDTO.setPosition(new  HomeTownDTO());
+        }
+
+        List<Review>  reviews = entity.getReviews();
+        if (reviews != null) {
+            List<ReviewDTO> reviewDTOs = new ArrayList<>();
+            for (Review review : reviews) {
+                ReviewDTO reviewDTO = new ReviewDTO();
+                reviewDTO.setScore(review.getScore());
+                reviewDTO.setUsername(review.getUsername());
+                reviewDTO.setText(review.getText());
+                reviewDTOs.add(reviewDTO);
+            }
+            eventDTO.setReviews(reviewDTOs);
+        } else {
+            eventDTO.setReviews(new ArrayList<>());
+        }
+
+        Statistics statistics = entity.getStatistics();
+        if (statistics != null) {
+            StatisticsDTO statisticsDTO = new StatisticsDTO();
+            statisticsDTO.setDateUpdate(statistics.getDateUpdate());
+            statisticsDTO.setAverageAge(statistics.getAverageAge());
+            statisticsDTO.setPredictedIncome(statistics.getPredictedIncome());
+            statisticsDTO.setOriginAttenders(Map.copyOf(statistics.getOriginAttenders()));
+            statisticsDTO.setTotalAttenders(statistics.getTotalAttenders());
+            eventDTO.setStatistic(statisticsDTO);
+        } else {
+            eventDTO.setStatistic(null);
+        }
+
+        return  eventDTO;
     }
 }
