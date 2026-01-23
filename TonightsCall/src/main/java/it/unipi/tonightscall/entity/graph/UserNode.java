@@ -1,12 +1,11 @@
 package it.unipi.tonightscall.entity.graph;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,5 +49,24 @@ public class UserNode {
      * </p>
      */
     @Relationship(type = ":LIKES", direction = Relationship.Direction.OUTGOING)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<TopicNode> interests = new HashSet<>();
+
+
+    @Relationship(type = ":FRIENDSHIP", direction = Relationship.Direction.OUTGOING)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<UserNode> friends = new HashSet<>();
+
+
+    @Relationship(type = ":ATTENDS", direction = Relationship.Direction.OUTGOING)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<EventNode> attendees = new HashSet<>();
+
+    @Relationship(type = ":REVIEWS", direction = Relationship.Direction.OUTGOING)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<ReviewRelationship> reviews = new ArrayList<>();
 }
