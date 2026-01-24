@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -13,6 +14,12 @@ import java.util.List;
 public interface EventRepository extends MongoRepository<@NonNull Event, @NonNull String> {
     Page<@NonNull Event> findAll(Pageable page);
 
-    Page<@NonNull Event> findByCategoriesIn(Collection<List<String>> categories, Pageable pageable);
-    Page<@NonNull Event> findByCategoriesAll(Collection<List<String>> categories, Pageable pageable);
+    //  --- Find events based on topics ---
+    //  At least one topic
+        Page<@NonNull Event> findByCategoriesIn(Collection<List<String>> categories, Pageable pageable);
+    //  Every topic
+        Page<@NonNull Event> findByCategoriesAll(Collection<List<String>> categories, Pageable pageable);
+
+    //  --- Find events based on the starting date ---
+        Page<@NonNull Event> findByStartingDateGreaterThanEqual(LocalDate startingDate, Pageable pageable);
 }
