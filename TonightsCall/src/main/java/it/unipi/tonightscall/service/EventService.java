@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,4 +26,7 @@ public class EventService {
     public Page<@NonNull Event> getAllEvents(Pageable pageable) { return this.eventRepository.findAll(pageable); }
 
     public Optional<Event> getEventById(String id) { return this.eventRepository.findById(id); }
+
+    //  Find events that contain at least one of the provided categories
+    public Page<@NonNull Event> getEventsByTopic(Collection<List<String>> topics, Pageable pageable) { return this.eventRepository.findByCategoriesIn(topics, pageable); }
 }

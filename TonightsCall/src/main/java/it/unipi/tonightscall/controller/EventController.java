@@ -7,9 +7,9 @@ import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,4 +31,11 @@ public class EventController {
 
     @GetMapping("/{id}")
     public Optional<Event> getEventById(@PathVariable String id) { return this.eventService.getEventById(id); }
+
+    //  Find events that contain at least one of the provided categories
+    @GetMapping
+    public Page<@NonNull Event> getEventsByTopic(Collection<List<String>> topics, @RequestParam(defaultValue = "0") @Min(0) int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        return this.eventService.getEventsByTopic(topics, pageable);
+    }
 }
