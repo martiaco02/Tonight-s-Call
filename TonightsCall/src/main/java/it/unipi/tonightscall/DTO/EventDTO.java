@@ -50,7 +50,7 @@ public class EventDTO {
      */
     @JsonProperty("ticket_price")
     @Schema(description = "Map of ticket categories and their prices", example = "{\"Standard\": 20.0, \"VIP\": 50.0}")
-    private Map<String, Double> ticketPrice;
+    private Object ticketPrice;
 
     /**
      * The date when the event starts.

@@ -447,10 +447,10 @@ public class Mapper {
         entity.setUrlImg(eventDTO.getUrlImg());
         entity.setTotalReview(eventDTO.getTotalReview());
         entity.setEventScore(eventDTO.getEventScore());
-        Map<String, Double> ticketPriceDTO = eventDTO.getTicketPrice();
+        Object ticketPriceDTO = eventDTO.getTicketPrice();
 
         if (ticketPriceDTO != null) {
-            entity.setTicketPrice(Map.copyOf(ticketPriceDTO));
+            entity.setTicketPrice(ticketPriceDTO);
         } else {
             entity.setTicketPrice(new HashMap<>());
         }
@@ -574,9 +574,9 @@ public class Mapper {
             eventDTO.setCategories(new ArrayList<>());
         }
 
-        Map<String, Double> ticketPrice = entity.getTicketPrice();
+        Object ticketPrice = entity.getTicketPrice();
         if (ticketPrice != null) {
-            eventDTO.setTicketPrice(Map.copyOf(ticketPrice));
+            eventDTO.setTicketPrice(ticketPrice);
         }  else {
             eventDTO.setTicketPrice(new HashMap<>());
         }

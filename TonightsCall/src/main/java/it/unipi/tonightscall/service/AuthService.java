@@ -96,6 +96,7 @@ public class AuthService {
             throw new RuntimeException("HomeTown is required!");
 
         userDto.setReviewedEvents(new ArrayList<>());
+        userDto.setFriends(new ArrayList<>());
 
         User entity = Mapper.mapUserToEntity(userDto);
         entity.setPassword(passwordEncoder.encode(userDto.getPassword()));
