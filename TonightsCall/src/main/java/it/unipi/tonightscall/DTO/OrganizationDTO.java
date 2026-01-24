@@ -25,5 +25,4 @@ public class OrganizationDTO extends AbstracOrganizerDTO {
     @JsonProperty("pending_requests")
     @Schema(description = "List of pending requests from users wanting to join the organization")
     private List<RequestDTO> pendingRequests;
-
 }

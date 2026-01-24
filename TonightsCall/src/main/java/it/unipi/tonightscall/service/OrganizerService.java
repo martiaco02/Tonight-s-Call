@@ -14,13 +14,11 @@ import it.unipi.tonightscall.repository.graph.OrganizerGraphRepository;
 import it.unipi.tonightscall.repository.graph.TopicGraphRepository;
 import it.unipi.tonightscall.utilies.Mapper;
 import it.unipi.tonightscall.utilies.Roles;
-import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service class handling complex business logic for Controllers.
@@ -76,6 +74,10 @@ public class OrganizerService {
      */
     @Transactional
     public OrganizationDTO registerOrganization(OrganizationDTO organizationDTO, String username) {
+
+        if (organizationDTO.getName() == null)
+            throw new RuntimeException("Organization name is required");
+
         if (organizationRepository.existsByName(organizationDTO.getName())) {
             throw new RuntimeException("The name " + organizationDTO.getName() + " is already taken.");
         }
@@ -96,6 +98,12 @@ public class OrganizerService {
         Organization saved = organizationRepository.save(organization);
 
         OrganizerNode organizerNode = Mapper.mapOrganizerToNode(saved);
+
+        me.getOrganizations().add(
+                new OrganizationForLinking(saved.getId(), saved.getName())
+        );
+
+        organizerRepository.save(me);
         OrganizerNode savedNode = organizerGraphRepository.save(organizerNode);
 
         return Mapper.mapOrganizationToDto(saved);
@@ -146,7 +154,7 @@ public class OrganizerService {
         }
 
         if (eventDTO.getEndingDate() != null) {
-            if (eventDTO.getStartingDate().isBefore(eventDTO.getEndingDate())) {
+            if (!eventDTO.getStartingDate().isBefore(eventDTO.getEndingDate())) {
                 throw new RuntimeException("Ending Date is before Start Date");
             }
         }

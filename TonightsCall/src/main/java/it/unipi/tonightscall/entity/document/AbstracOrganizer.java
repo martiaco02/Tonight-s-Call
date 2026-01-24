@@ -15,7 +15,7 @@ import java.util.List;
  * </p>
  */
 @Data
-@Document(collection = "Organizers")
+@Document(collection = "organizers")
 public class AbstracOrganizer {
 
     /**

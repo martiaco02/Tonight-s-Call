@@ -103,6 +103,12 @@ public class UserService {
         event.getReviews().add(new Review(score, me.getUsername(), text));
         event.setTotalReview(event.getTotalReview() + 1);
 
+        int total = 0;
+        for (Review review : event.getReviews())
+            total += review.getScore();
+
+        event.setEventScore((double) total /event.getTotalReview());
+
         userRepository.save(me);
         eventRepository.save(event);
 
@@ -121,8 +127,6 @@ public class UserService {
             myNode.setReviews(new ArrayList<>());
         }
         myNode.getReviews().add(rr);
-
-        System.out.println("--------\nMyNode: " +myNode.getReviews());
 
         userGraphRepository.save(myNode);
 

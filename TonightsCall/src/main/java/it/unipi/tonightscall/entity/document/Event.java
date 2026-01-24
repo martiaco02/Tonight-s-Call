@@ -45,7 +45,7 @@ public class Event {
     private String urlImg;
 
     @Field("starting_times")
-    private Map<String, Object> startingTimes;
+    private Object startingTimes;
 
     @Field("reviews")
     private List<Review> reviews;

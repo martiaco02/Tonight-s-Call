@@ -53,6 +53,7 @@ public class Mapper {
                 dto.setHomeTown(
                         new AddressDTO(
                                 addressEntity.getCityName(),
+                                addressEntity.getFullAddress(),
                                 new LocationDTO(
                                         locationEntity.getType(),
                                         locationEntity.getCoordinates()
@@ -64,6 +65,7 @@ public class Mapper {
                dto.setHomeTown(
                        new AddressDTO(
                                addressEntity.getCityName(),
+                               addressEntity.getFullAddress(),
                                null
                        )
                );
@@ -409,7 +411,7 @@ public class Mapper {
      * based on whether the input is an individual Organizer or an Organization.
      * </p>
      *
-     * @param organizerDto The source DTO (can be OrganizerDTO or OrganizationDTO).
+     * @param organizer The source DTO (can be OrganizerDTO or OrganizationDTO).
      * @return An OrganizerNode entity for Neo4j.
      */
     public static OrganizerNode mapOrganizerToNode(AbstracOrganizer organizer) {
@@ -460,9 +462,9 @@ public class Mapper {
             entity.setCategories(new ArrayList<>());
         }
 
-        Map<String, Object> startingTimesDTO = eventDTO.getStartingTimes();
+        Object startingTimesDTO = eventDTO.getStartingTimes();
         if (startingTimesDTO != null) {
-            entity.setStartingTimes(Map.copyOf(startingTimesDTO));
+            entity.setStartingTimes(startingTimesDTO);
         } else {
             entity.setStartingTimes(new HashMap<>());
         }
@@ -578,9 +580,9 @@ public class Mapper {
             eventDTO.setTicketPrice(new HashMap<>());
         }
 
-        Map<String, Object> startingTimes = entity.getStartingTimes();
+        Object startingTimes = entity.getStartingTimes();
         if (startingTimes != null) {
-            eventDTO.setStartingTimes(Map.copyOf(startingTimes));
+            eventDTO.setStartingTimes(startingTimes);
         } else {
             eventDTO.setStartingTimes(new HashMap<>());
         }

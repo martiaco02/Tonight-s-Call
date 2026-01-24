@@ -163,6 +163,7 @@ public class AuthService {
         OrganizerNode organizerNode = Mapper.mapOrganizerToNode(entity);
         OrganizerNode savedNode = organizerGraphRepository.save(organizerNode);
 
+        saved.setPassword(null);
         return Mapper.mapOrganizerToDto(saved);
     }
 

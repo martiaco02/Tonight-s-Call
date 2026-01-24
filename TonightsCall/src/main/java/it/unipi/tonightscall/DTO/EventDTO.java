@@ -93,7 +93,7 @@ public class EventDTO {
      */
     @JsonProperty("starting_times")
     @Schema(description = "Flexible structure containing schedule or timing details", example = "{\"Day 1\": \"18:00\", \"Day 2\": \"20:00\"}")
-    private Map<String, Object> startingTimes;
+    private Object startingTimes;
 
     /**
      * List of user reviews for this event.
