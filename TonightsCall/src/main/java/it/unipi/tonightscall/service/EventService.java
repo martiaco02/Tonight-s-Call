@@ -19,7 +19,7 @@ public class EventService {
         this.eventGraphRepository = eventGraphRepository;
     }
 
-    public List<Event> getAllEvents() { return eventRepository.findAll(); }
+    public List<Event> getAllEvents() { return this.eventRepository.findAll(); }
 
-    public Optional<Event> getEventById(String id) { return eventRepository.findById(id); }
+    public Optional<Event> getEventById(String id) { return this.eventRepository.findById(id); }
 }

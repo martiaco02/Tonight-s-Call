@@ -8,13 +8,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.unipi.tonightscall.DTO.EventDTO;
 import it.unipi.tonightscall.DTO.OrganizationDTO;
+import it.unipi.tonightscall.entity.document.Organizer;
 import it.unipi.tonightscall.service.OrganizerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * REST Controller handling operations specific to Organizers.
@@ -33,6 +34,12 @@ public class OrganizerController {
     public OrganizerController(OrganizerService controllerService) {
         this.controllerService = controllerService;
     }
+
+    @GetMapping
+    public List<Organizer> getAllOrganizers() { return this.controllerService.getAllOrganizers(); }
+
+    @GetMapping("/{id}")
+    public Optional<Organizer> getOrganizerById(@PathVariable String id) { return this.controllerService.getOrganizerById(id); }
 
     /**
      * Registers a new Organization linked to the currently authenticated Organizer.
