@@ -473,6 +473,7 @@ public class Mapper {
         if (addressDTO != null) {
             Address address = new Address();
             address.setCityName(addressDTO.getCityName());
+            address.setFullAddress(addressDTO.getFullAddress());
             LocationDTO locationDTO = addressDTO.getLoc();
             if (locationDTO != null) {
                 Location location = new Location(
@@ -591,6 +592,7 @@ public class Mapper {
         if (position != null) {
             AddressDTO positionDTO = new AddressDTO();
             positionDTO.setCityName(position.getCityName());
+            positionDTO.setFullAddress(position.getFullAddress());
             Location location =  position.getLocation();
             if (location != null) {
                 LocationDTO locationDTO = new LocationDTO();
