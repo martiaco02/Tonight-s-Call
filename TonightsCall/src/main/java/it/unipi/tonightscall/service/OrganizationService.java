@@ -8,6 +8,7 @@ import it.unipi.tonightscall.utilies.Mapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrganizationService {
@@ -20,6 +21,9 @@ public class OrganizationService {
         this.organizerRepository = organizerRepository;
     }
 
+    public List<Organization> getAllOrganizations() { return this.organizationRepository.findAll(); }
+
+    public Optional<Organization> getOrganizationById(String id) { return this.organizationRepository.findById(id); }
 
     public void addJoinRequest(String organizationId, String username) {
 
