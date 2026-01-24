@@ -3,6 +3,9 @@ package it.unipi.tonightscall.service;
 import it.unipi.tonightscall.entity.document.Event;
 import it.unipi.tonightscall.repository.document.EventRepository;
 import it.unipi.tonightscall.repository.graph.EventGraphRepository;
+import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,7 +22,7 @@ public class EventService {
         this.eventGraphRepository = eventGraphRepository;
     }
 
-    public List<Event> getAllEvents() { return this.eventRepository.findAll(); }
+    public Page<@NonNull Event> getAllEvents(Pageable pageable) { return this.eventRepository.findAll(pageable); }
 
     public Optional<Event> getEventById(String id) { return this.eventRepository.findById(id); }
 }
