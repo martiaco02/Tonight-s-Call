@@ -3,16 +3,16 @@ package it.unipi.tonightscall.controller;
 import it.unipi.tonightscall.DTO.EventDTO;
 import it.unipi.tonightscall.DTO.ReviewParameterDTO;
 import it.unipi.tonightscall.DTO.UserDTO;
+import it.unipi.tonightscall.entity.document.User;
 import it.unipi.tonightscall.repository.document.UserRepository;
 import it.unipi.tonightscall.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
@@ -23,6 +23,12 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
+
+    @GetMapping
+    public List<User> getAllUsers() { return this.userService.getAllUsers(); }
+
+    @GetMapping("/{id}")
+    public Optional<User> getUserById(@PathVariable String id) { return this.userService.getUserById(id); }
 
     @PostMapping("/RegisterFriend")
     public ResponseEntity<?> registerFriend(@RequestBody Map<String, String> payload, Authentication authentication) {
