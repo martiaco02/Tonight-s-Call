@@ -38,4 +38,11 @@ public class EventController {
         Pageable pageable = PageRequest.of(page, 10);
         return this.eventService.getEventsByTopic(topics, pageable);
     }
+
+    //  Find events that contain every provided category
+    @GetMapping
+    public Page<@NonNull Event> getEventsByAllTopics(Collection<List<String>> topics, @RequestParam(defaultValue = "0") @Min(0) int page) {
+        Pageable pageable = PageRequest.of(page, 10);
+        return this.eventService.getEventsByAllTopics(topics, pageable);
+    }
 }

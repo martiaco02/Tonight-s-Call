@@ -29,4 +29,7 @@ public class EventService {
 
     //  Find events that contain at least one of the provided categories
     public Page<@NonNull Event> getEventsByTopic(Collection<List<String>> topics, Pageable pageable) { return this.eventRepository.findByCategoriesIn(topics, pageable); }
+
+    //  Find events that contain every provided category
+    public Page<@NonNull Event> getEventsByAllTopics(Collection<List<String>> topics, Pageable pageable) { return this.eventRepository.findByCategoriesAll(topics, pageable); }
 }

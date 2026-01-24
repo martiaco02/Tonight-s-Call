@@ -14,4 +14,5 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
     Page<@NonNull Event> findAll(Pageable page);
 
     Page<@NonNull Event> findByCategoriesIn(Collection<List<String>> categories, Pageable pageable);
+    Page<@NonNull Event> findByCategoriesAll(Collection<List<String>> categories, Pageable pageable);
 }
