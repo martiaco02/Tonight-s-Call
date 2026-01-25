@@ -1,13 +1,11 @@
 package it.unipi.tonightscall.repository.document;
 
 import it.unipi.tonightscall.entity.document.Event;
-import it.unipi.tonightscall.entity.document.Organization;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 
 import java.awt.*;
 import java.time.LocalDate;
@@ -36,18 +34,10 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
      * @param categories the list of topics
      * @param pageable used to manage pagination
      */
-    Page<@NonNull Event> findByCategoriesIn(Collection<List<String>> categories, Pageable pageable);
+    Page<@NonNull Event> findByCategoriesIn(List<String> categories, Pageable pageable);
 
     /**
-     * Find events that contain every specified topic
-     *
-     * @param categories the list of topics
-     * @param pageable used to manage pagination
-     */
-    Page<@NonNull Event> findByCategoriesAll(Collection<List<String>> categories, Pageable pageable);
-
-    /**
-     * Find events that contain at least one of the specified topics
+     * Find events that start at the specified date
      *
      * @param startingDate the starting date of the event
      * @param pageable used to manage pagination
@@ -55,11 +45,29 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
     Page<@NonNull Event> findByStartingDateGreaterThanEqual(LocalDate startingDate, Pageable pageable);
 
     /**
-     * Find events based on their location
+     * Given the coordinates of a point [lon, lat], find every event near that point, given a maximum admissible distance
      *
      * @param location the point where events have to be found
-     * @param distance the max possible distance from location
+     * @param distance the max admissible distance from location
      * @param pageable used to manage pagination
      */
-    Page<@NonNull Event> findByAddressLocationNear(Point location, Distance distance, Pageable pageable);
-}
+    Page<@NonNull Event> findByPositionLocationNear(Point location, Distance distance, Pageable pageable);
+
+    /*  C'è la possibilità che findByPositionLocationNear non funzioni perché vuole come parametro un oggetto Location,
+        ma a quel punto $near non funziona più perché mongo vuole un Point, quindi o si usa la @Query sotto o si mette
+        Point nella classe Location invece di type e coordinates
+     */
+    /*@Query("""
+    {
+      'address.loc': {
+        $nearSphere: {
+          $geometry: { type: 'Point', coordinates: ?0 },
+          $maxDistance: ?1
+        }
+      }
+    }
+    """)
+    Page<Event> findEventsNear(List<Double> coordinates, double maxDistance, Pageable pageable);*/
+
+
+    }

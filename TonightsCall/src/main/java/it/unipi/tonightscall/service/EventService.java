@@ -23,7 +23,7 @@ public class EventService {
 
     public final int PAGE_SIZE = 10;
 
-    EventService(EventRepository eventRepository, EventGraphRepository eventGraphRepository) {
+    public EventService(EventRepository eventRepository, EventGraphRepository eventGraphRepository) {
         this.eventRepository = eventRepository;
         this.eventGraphRepository = eventGraphRepository;
     }
@@ -48,18 +48,10 @@ public class EventService {
      * @param topics the list of topics
      * @param pageable used to manage pagination
      */
-    public Page<@NonNull Event> getEventsByTopic(Collection<List<String>> topics, Pageable pageable) { return this.eventRepository.findByCategoriesIn(topics, pageable); }
+    public Page<@NonNull Event> getEventsByTopic(List<String> topics, Pageable pageable) { return this.eventRepository.findByCategoriesIn(topics, pageable); }
 
     /**
-     * Find events that contain every specified topic
-     *
-     * @param topics the list of topics
-     * @param pageable used to manage pagination
-     */
-    public Page<@NonNull Event> getEventsByAllTopics(Collection<List<String>> topics, Pageable pageable) { return this.eventRepository.findByCategoriesAll(topics, pageable); }
-
-    /**
-     * Find events that contain at least one of the specified topics
+     * Find events that start at the specified date
      *
      * @param startingDate the starting date of the event
      * @param pageable used to manage pagination
@@ -73,5 +65,5 @@ public class EventService {
      * @param distance the max possible distance from location
      * @param pageable used to manage pagination
      */
-    public Page<@NonNull Event> getEventsByLocation(Point location, Distance distance, Pageable pageable) { return this.eventRepository.findByAddressLocationNear(location, distance, pageable); }
+    public Page<@NonNull Event> getEventsByLocation(Point location, Distance distance, Pageable pageable) { return this.eventRepository.findByPositionLocationNear(location, distance, pageable); }
 }
