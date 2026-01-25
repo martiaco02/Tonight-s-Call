@@ -37,9 +37,9 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
     Page<@NonNull Event> findByCategoriesIn(List<String> categories, Pageable pageable);
 
     /**
-     * Find events that start at the specified date
+     * Find events that start at the specified date or later
      *
-     * @param startingDate the starting date of the event
+     * @param startingDate the minimum starting date of the events
      * @param pageable used to manage pagination
      */
     Page<@NonNull Event> findByStartingDateGreaterThanEqual(LocalDate startingDate, Pageable pageable);
@@ -69,5 +69,12 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
     """)
     Page<Event> findEventsNear(List<Double> coordinates, double maxDistance, Pageable pageable);*/
 
-
-    }
+    /**
+     * Find every event containing at least one of the specified topics and starting at the specified date or later
+     *
+     * @param categories the list of topics
+     * @param date the minimum starting date of the events
+     * @param pageable used to manage pagination
+     */
+    Page<@NonNull Event> findByCategoriesInAndStartingDateGreaterThanEqual(List<String> categories, LocalDate date, Pageable pageable);
+}

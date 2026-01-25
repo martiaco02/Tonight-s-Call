@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,7 +50,7 @@ public class EventService {
     public Page<@NonNull Event> getEventsByTopic(List<String> topics, Pageable pageable) { return this.eventRepository.findByCategoriesIn(topics, pageable); }
 
     /**
-     * Find events that start at the specified date
+     * Find events that start at the specified date or later
      *
      * @param startingDate the starting date of the event
      * @param pageable used to manage pagination
@@ -66,4 +65,15 @@ public class EventService {
      * @param pageable used to manage pagination
      */
     public Page<@NonNull Event> getEventsByLocation(Point location, Distance distance, Pageable pageable) { return this.eventRepository.findByPositionLocationNear(location, distance, pageable); }
+
+    /**
+     * Find every event containing at least one of the specified topics and starting at the specified date or later
+     *
+     * @param categories the list of topics
+     * @param date the minimum starting date of the events
+     * @param pageable used to manage pagination
+     */
+    public Page<@NonNull Event> getEventsByTopicAndDate(List<String> categories, LocalDate date, Pageable pageable) {
+        return this.eventRepository.findByCategoriesInAndStartingDateGreaterThanEqual(categories, date, pageable);
+    }
 }
