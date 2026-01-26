@@ -13,12 +13,21 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @NoArgsConstructor
 public class Members {
 
+    /**
+     * Unique identifier of the member.
+     */
     @Field("id")
     private String id;
 
+    /**
+     * Member's name (ex. Mario Rossi).
+     */
     @Field("name")
     private String name;
 
+    /**
+     * Member's password.
+     */
     @Field("password")
     private String password;
 

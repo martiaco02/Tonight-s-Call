@@ -107,6 +107,14 @@ public class OrganizerController {
                     content = @Content(mediaType = "text/plain")
             )
     })
+
+    /**
+     * Registers a new Event made by the currently authenticated Organizer.
+     *
+     * @param eventDTO The details of the event to be created.
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
+     * @return The created EventDTO if successful, or an error message otherwise.
+     */
     @PostMapping("/registerEvent")
     public ResponseEntity<?> registerEvent(@RequestBody EventDTO eventDTO, Authentication authentication) {
         try{
@@ -120,12 +128,18 @@ public class OrganizerController {
         }
     }
 
+    /**
+     * Updates the data of the authenticated Organizer.
+     *
+     * @param organizerDTO The updated details of the organizer to be updated.
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
+     * @return The updated OrganizerDTO if successful, or an error message otherwise.
+     */
+
     @PutMapping
     public ResponseEntity<?> updateOrganizer(@RequestBody OrganizerDTO organizerDTO, Authentication authentication) {
         try{
-            Organizer org = organizerRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("Organizer not found"));
-
-            OrganizerDTO updatedOrganizer = controllerService.updateOrganizer(org.getId(), organizerDTO);
+            OrganizerDTO updatedOrganizer = controllerService.updateOrganizer(authentication.getName(), organizerDTO);
             return ResponseEntity.ok(updatedOrganizer);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -133,14 +147,24 @@ public class OrganizerController {
 
     }
 
-    @DeleteMapping("{organizerID}/organization/{organizationID}")
-    public ResponseEntity<?> deleteOrganizationMembership(@PathVariable String organizerID, @PathVariable String organizationName, Authentication authentication) {
-        Organizer organizer = organizerRepository.findById(organizerID).orElseThrow(() -> new RuntimeException("Organizer not found"));
-        if(!organizer.getUsername().equals(authentication.getName()))
-            return ResponseEntity.status(403).body("Forbidden: You can only delete your own memberships.");
-        Organization organization = organizationRepository.findByName(organizationName).orElseThrow(() -> new RuntimeException("Organization not found"));
-        controllerService.deleteOrganizationMembership(organizerID, organizationName);
-        return ResponseEntity.ok().build();
+    /**
+     * Deletes a membership from the Organization's member list.
+     *
+     * @param organizationName The name of the Organization the authenticated Organizer wants to delete their membership from.
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
+     * @return The updated OrganizerDTO if successful, or an error message otherwise.
+     */
+
+
+    @DeleteMapping("organization/{organizationID}")
+    public ResponseEntity<?> deleteOrganizationMembership(@PathVariable String organizationName, Authentication authentication) {
+        try{
+            OrganizerDTO organizerDTO = controllerService.deleteOrganizationMembership(authentication.getName(), organizationName);
+            return ResponseEntity.ok(organizerDTO);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
 
     }
 

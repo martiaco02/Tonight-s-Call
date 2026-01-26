@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * REST Controller handling User operations.
+ */
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -25,6 +29,13 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Registers a new friendship in the system.
+     *
+     * @param payload The user information transfer object containing registration details.
+     * @param authentication Security context of the user performing the action.
+     * @return The updated UserDTO if successful, or an error message if the request is invalid.
+     */
     @PostMapping("/RegisterFriend")
     public ResponseEntity<?> registerFriend(@RequestBody Map<String, String> payload, Authentication authentication) {
         try {
@@ -35,6 +46,13 @@ public class UserController {
         }
     }
 
+    /**
+     * Registers a new attendance in the system.
+     *
+     * @param payload The user information transfer object containing registration details.
+     * @param authentication Security context of the user performing the action.
+     * @return The updated EventDTO if successful, or an error message if the request is invalid.
+     */
     @PostMapping("/attending")
     public ResponseEntity<?> attending(@RequestBody Map<String, String> payload, Authentication authentication) {
         try{
@@ -45,6 +63,13 @@ public class UserController {
         }
     }
 
+    /**
+     * Registers a new Review in the system.
+     *
+     * @param parameters The new ReviewParameterDTO containing the new review data.
+     * @param authentication Security context of the user performing the action.
+     * @return The updated EventDTO if successful, or an error message if the request is invalid.
+     */
     @PostMapping("/review")
     public ResponseEntity<?> review(@RequestBody ReviewParameterDTO parameters, Authentication authentication) {
         try {
@@ -55,15 +80,19 @@ public class UserController {
         }
     }
 
+    /**
+     * Updates a User data in the system.
+     *
+     * @param user The new UserDTO containing the updated user's data.
+     * @param authentication Security context of the user performing the action.
+     * @return The updated UserDTO if successful, or an error message if the request is invalid.
+     */
 
     @PutMapping
-    public ResponseEntity<?> updateUser(
-                                        @RequestBody UserDTO user,
-                                        Authentication authentication) {
+    public ResponseEntity<?> updateUser(@RequestBody UserDTO user, Authentication authentication) {
         try {
-            User existingUser = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found!"));
 
-            UserDTO updatedUser = userService.updateUser(existingUser.getId(), user);
+            UserDTO updatedUser = userService.updateUser(user.getId(), user);
             return ResponseEntity.ok(updatedUser);
 
         } catch (RuntimeException e) {
@@ -71,15 +100,18 @@ public class UserController {
         }
     }
 
+    /**
+     * Updates a Review data in the system.
+     *
+     * @param parameters The new ReviewParameterDTO containing the updated review data.
+     * @param authentication Security context of the user performing the action.
+     * @return The updated ReviewParameterDTO if successful, or an error message if the request is invalid.
+     */
     @PutMapping("review")
     public ResponseEntity<?> updateReview(@RequestBody ReviewParameterDTO parameters,
                                           Authentication authentication) {
         try {
-            ReviewDTO reviewDTO = new ReviewDTO();
-            reviewDTO.setScore(parameters.getScore());
-            reviewDTO.setText(parameters.getText());
-            reviewDTO.setUsername(authentication.getName());
-            ReviewDTO updatedReview = userService.updateReview(parameters.getEventId(), reviewDTO);
+            ReviewParameterDTO updatedReview = userService.updateReview(parameters.getEventId(), parameters, authentication.getName());
             return ResponseEntity.ok(updatedReview);
 
         } catch (RuntimeException e) {
@@ -87,42 +119,55 @@ public class UserController {
         }
     }
 
+
+    /**
+     * Removes a Review from the system.
+     *
+     * @param eventID The id of the Event the Review is related to.
+     * @param authentication Security context of the user performing the action.
+     * @return The updated UserDTO if successful, or an error message if the request is invalid.
+     */
     @DeleteMapping("review/{eventID}")
     public ResponseEntity<?> deleteReview(@PathVariable String eventID, Authentication authentication) {
         try{
-            User user = userRepository.findByUsername(authentication.getName())
-                            .orElseThrow(() -> new RuntimeException("User not found"));
-
-            userService.deleteReview(eventID, user.getId());
-            return ResponseEntity.ok(user);
+            UserDTO userDTO = userService.deleteReview(eventID, authentication.getName());
+            return ResponseEntity.ok(userDTO);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
     }
 
+    /**
+     * Removes an Attendance from the system.
+     *
+     * @param eventID The id of the Event the Attendance is related to.
+     * @param authentication Security context of the user performing the action.
+     * @return The updated UserDTO if successful, or an error message if the request is invalid.
+     */
     @DeleteMapping("attending/{eventID}")
     public ResponseEntity<?> deleteAttendance(@PathVariable String eventID, Authentication authentication) {
         try{
-            User user = userRepository.findByUsername(authentication.getName())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-
-            userService.deleteAttendance(eventID, user.getId());
-            return ResponseEntity.ok(user);
+            UserDTO userDTO = userService.deleteAttendance(eventID, authentication.getName());
+            return ResponseEntity.ok(userDTO);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @DeleteMapping("/friendship/{friendID}")
-    public ResponseEntity<?> deleteFriendship(@PathVariable String friendID, Authentication authentication) {
+    /**
+     * Removes a friendship from the system.
+     *
+     * @param friendUsername The id of the Event the Review is related to.
+     * @param authentication Security context of the user performing the action.
+     * @return The updated UserDTO if successful, or an error message if the request is invalid.
+     */
+    @DeleteMapping("/friendship/{friendUsername}")
+    public ResponseEntity<?> deleteFriendship(@PathVariable String friendUsername, Authentication authentication) {
         try{
-            User user = userRepository.findByUsername(authentication.getName())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            userService.deleteFriendship(user.getId(), friendID);
-            return ResponseEntity.ok(user);
+            UserDTO userDTO = userService.deleteFriendship(authentication.getName(), friendUsername);
+            return ResponseEntity.ok(userDTO);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

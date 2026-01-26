@@ -221,15 +221,15 @@ public class OrganizerService {
      * </ol>
      * </p>
      *
-     * @param organizerID The ID of the Organizer to update.
+     * @param username The Username of the Organizer to update.
      * @param newOrganizerDTO The OrganizerDTO with the updated data.
      * @return The updated OrganizerDTO.
      * @throws RuntimeException If the organizer is not found or if the user tries to update username or password.
      */
 
     @Transactional
-    public OrganizerDTO updateOrganizer(String organizerID, OrganizerDTO newOrganizerDTO){
-        Organizer oldOrganizer = organizerRepository.findById(organizerID)
+    public OrganizerDTO updateOrganizer(String username, OrganizerDTO newOrganizerDTO){
+        Organizer oldOrganizer = organizerRepository.findById(username)
                 .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
 
         // checking consistency: username can't change
@@ -299,14 +299,15 @@ public class OrganizerService {
      * </ol>
      * </p>
      *
-     * @param organizerID The ID of the Organizer whose membership must be deleted.
+     * @param username The Username of the Organizer whose membership must be deleted.
      * @param orgName The name of the Organization from whom the Organizer wants to delete the membership.
+     * @return The updated OrganizerDTO
      * @throws RuntimeException If the organizer is not found or if the Organization is not found.
      */
 
     @Transactional
-    public void deleteOrganizationMembership(String organizerID, String orgName){
-        Organizer organizer = organizerRepository.findById(organizerID)
+    public OrganizerDTO deleteOrganizationMembership(String username, String orgName){
+        Organizer organizer = organizerRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
 
         Organization organization = organizationRepository.findByName(orgName)
@@ -323,13 +324,14 @@ public class OrganizerService {
 
         if (organization.getMembers() != null) {
             boolean removed = organization.getMembers().removeIf(
-                    member -> member.getId().equals(organizerID)
+                    member -> member.getId().equals(organizer.getId())
             );
             if (removed) {
                 organizationRepository.save(organization);
             }
         }
 
+        return Mapper.mapOrganizerToDto(organizer);
     }
 
 }

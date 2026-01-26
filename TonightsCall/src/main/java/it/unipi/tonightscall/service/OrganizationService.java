@@ -11,6 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Service class handling complex business logic for Controllers.
+ * <p>
+ * Unlike AuthService which handles authentication, this service manages
+ * operations requiring interaction between different entities (e.g., an Organization adding a join Request).
+ * </p>
+ */
+
 @Service
 public class OrganizationService {
 
@@ -22,6 +30,25 @@ public class OrganizationService {
         this.organizerRepository = organizerRepository;
     }
 
+
+
+    /**
+     * Adds an Organizer's new join Request to the list of pending requests.
+     * <p>
+     * This method:
+     * <ol>
+     *      <li>Checks if the Organizer exists.</li>
+     *      <li>Checks if the Organization exists.</li>
+     *      <li>Adds the user to the friend's friend list.</li>
+     *      <li>Saves the users to MongoDB.</li>
+     *      <li>Saves the corresponding nodes in the Graph Database (Neo4j).</li>
+     * </ol>
+     * </p>
+     *
+     * @param organizationId The id of the Organization that was asked to be joined.
+     * @param username The Username of the Organizer sending the request to join.
+     * @throws RuntimeException If the Organizer or the Organization are not found.
+     */
 
     public void addJoinRequest(String organizationId, String username) {
 
@@ -53,6 +80,26 @@ public class OrganizationService {
 
         organizationRepository.save(toJoin);
     }
+
+
+    /**
+     * Accepts an Organizer's join Request.
+     * <p>
+     * This method:
+     * <ol>
+     *      <li>Checks if the Organization exists.</li>
+     *      <li>Checks if the Organizer (new member) exists.</li>
+     *      <li>Adds the user to the friend's friend list.</li>
+     *      <li>Saves the users to MongoDB.</li>
+     *      <li>Saves the corresponding nodes in the Graph Database (Neo4j).</li>
+     * </ol>
+     * </p>
+     *
+     * @param newMemberId The id of the Organizer who is to be accepted as new member of the Organization.
+     * @param username The Username of the Organization.
+     * @return The new OrganizationDTO.
+     * @throws RuntimeException If the Organizer or Organization are not found, or if the Organizer's pending request is not found.
+     */
 
     public OrganizationDTO acceptJoinRequest(String newMemberId, String username) {
 
@@ -87,21 +134,26 @@ public class OrganizationService {
      * </ol>
      * </p>
      *
-     * @param organizationID The ID of the Organization to update.
+     * @param organizationName The Name of the Organization to update.
      * @param newOrganizationDTO The OrganizationDTO containing the new data.
      * @return The updated OrganizationDTO.
-     * @throws RuntimeException If the Organization is not found.
+     * @throws RuntimeException If the Organization is not found, or if the current user tries to update an Organization they aren't part of.
      */
 
     @Transactional
-    public OrganizationDTO updateOrganization(String organizationID, OrganizationDTO newOrganizationDTO){
-        Organization oldOrganization = organizationRepository.findById(organizationID)
+    public OrganizationDTO updateOrganization(String organizationName, OrganizationDTO newOrganizationDTO){
+        Organization oldOrganization = organizationRepository.findByName(organizationName)
                 .orElseThrow(() -> new RuntimeException("Organization Not Found!"));
-
-        // organization's name can change because the authentication based on username
+        if(!oldOrganization.getName().equals(newOrganizationDTO.getName())){
+            throw new RuntimeException("You can only update data of an Organization you are part of!");
+        }
+        // organization's name can change because the authentication is based on username
         // is done on the members of it (so on their usernames)
 
-        if(newOrganizationDTO.getName() != null){ oldOrganization.setName(newOrganizationDTO.getName());}
+        if(newOrganizationDTO.getName() != null && !oldOrganization.getName().equals(newOrganizationDTO.getName())) {
+            throw new RuntimeException("Can't change name of an Organization!");
+        }
+
         if(newOrganizationDTO.getVatNumber() != null){ oldOrganization.setVatNumber(newOrganizationDTO.getVatNumber());}
         if(newOrganizationDTO.getEmail() != null){ oldOrganization.setEmail(newOrganizationDTO.getEmail());}
 
@@ -123,13 +175,14 @@ public class OrganizationService {
      * </ol>
      * </p>
      *
-     * @param organizerID The ID of the Organizer.
+     * @param organizerUsername The Username of the Organizer.
      * @param organizationName The name of the Organization from whom the request must be deleted.
+     * @return The updated OrganizationDTO.
      * @throws RuntimeException If the organizer is not found or if the Organization is not found.
      */
     @Transactional
-    public void deleteRequest(String organizerID, String organizationName) {
-        Organizer organizer = organizerRepository.findById(organizerID)
+    public OrganizationDTO deleteRequest(String organizerUsername, String organizationName) {
+        Organizer organizer = organizerRepository.findByUsername(organizerUsername)
                 .orElseThrow(() -> new RuntimeException("Organizer not found!"));
 
         Organization organization =  organizationRepository.findByName(organizationName)
@@ -144,6 +197,7 @@ public class OrganizationService {
                 }
             }
         }
+        return Mapper.mapOrganizationToDto(organization);
 
     }
 }

@@ -18,10 +18,16 @@ import java.util.List;
 @Schema(description = "Model representing an Organization entity")
 public class OrganizationDTO extends AbstracOrganizerDTO {
 
+    /**
+     * List of members belonging to this organization.
+     */
     @JsonProperty("list_of_members")
     @Schema(description = "List of members belonging to this organization")
     private List<MembersDTO> members;
 
+    /**
+     * List of pending join requests.
+     */
     @JsonProperty("pending_requests")
     @Schema(description = "List of pending requests from users wanting to join the organization")
     private List<RequestDTO> pendingRequests;

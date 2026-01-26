@@ -15,14 +15,23 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Details of a member belonging to an organization")
 public class MembersDTO {
 
+    /**
+     * Unique identifier of the member.
+     */
     @JsonProperty("id")
     @Schema(description = "Unique identifier of the member", example = "usr_9876")
     private String id;
 
+    /**
+     * Member's name.
+     */
     @JsonProperty("name")
     @Schema(description = "Name of the member", example = "Mario Rossi")
     private String name;
 
+    /**
+     * Member's password.
+     */
     @JsonProperty("password")
     @Schema(
             description = "Member's password (Write-only)",

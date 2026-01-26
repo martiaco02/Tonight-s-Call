@@ -434,6 +434,13 @@ public class Mapper {
         throw new IllegalStateException("Utility class");
     }
 
+
+    /**
+     * Converts an EventDTO (API object) into an Event Entity (Database object).
+
+     * @param eventDTO The EventDTO received from the client.
+     * @return An Organization entity ready for persistence.
+     */
     public static Event mapEventToEntity(EventDTO eventDTO) {
         if (eventDTO == null)
             return null;
@@ -538,6 +545,12 @@ public class Mapper {
         return entity;
     }
 
+    /**
+     * Converts an EventDTO into an EventNode for Neo4j.
+
+     * @param entity The source EventDTO
+     * @return An OrganizerNode entity for Neo4j.
+     */
     public static EventNode mapEventToNode(Event entity) {
         EventNode eventNode = new EventNode();
         eventNode.setId(entity.getId());
@@ -551,6 +564,15 @@ public class Mapper {
         return eventNode;
     }
 
+    /**
+     * Converts an Event Entity (Database object) into an EventDTO (API object).
+     * <p>
+     * Populates the DTO with event details.
+     * </p>
+     *
+     * @param entity The Event entity retrieved from MongoDB.
+     * @return An EventDTO populated with data.
+     */
     public static EventDTO mapEventToDTO(Event entity) {
         if (entity == null) {
             return null;

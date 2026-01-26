@@ -13,9 +13,15 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor
 public class Request {
 
+    /**
+     * Unique identifier of the organizer who wants to join an Organization.
+     */
     @Field("id")
     private String id;
 
+    /**
+     * Username of the organizer who wants to join an Organization.
+     */
     @Field("username")
     private String username;
 }

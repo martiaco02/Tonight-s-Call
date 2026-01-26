@@ -24,18 +24,30 @@ import java.util.List;
 @Schema(description = "Model representing an individual Organizer")
 public class OrganizerDTO extends AbstracOrganizerDTO {
 
+    /**
+     * Last name of the individual.
+     */
     @JsonProperty("lastname")
     @Schema(description = "Last name of the organizer", example = "Rossi")
     private String lastName;
 
+    /**
+     * Unique username for login.
+     */
     @JsonProperty("username")
     @Schema(description = "Unique username", example = "event_master_99")
     private String username;
 
+    /**
+     * Date of birth of the organizer.
+     */
     @JsonProperty("date_of_birth")
     @Schema(description = "Date of birth (ISO 8601 format)", type = "string", format = "date", example = "1990-01-01")
     private LocalDate dateOfBirth;
 
+    /**
+     * Hashed password for authentication.
+     */
     @JsonProperty("password")
     @Schema(
             description = "Password for authentication. Write-only for security.",
@@ -44,6 +56,9 @@ public class OrganizerDTO extends AbstracOrganizerDTO {
     )
     private String password;
 
+    /**
+     * List of references to Organizations this individual is part of.
+     */
     @JsonProperty("organizations")
     @Schema(description = "List of organizations this individual belongs to")
     private List<OrganizationForLinkingDTO> organizations;

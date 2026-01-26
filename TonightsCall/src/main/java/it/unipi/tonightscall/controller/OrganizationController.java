@@ -14,7 +14,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-
+/**
+ * REST Controller handling operations specific to Organization.
+ */
 @RestController
 @RequestMapping("/organization")
 public class OrganizationController {
@@ -31,16 +33,32 @@ public class OrganizationController {
         this.organizerRepository = organizerRepository;
     }
 
+
+    /**
+     * Registers an Organizer's new Request to join an Organization
+     *
+     * @param organizationId The id of the Organization.
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
+     * @return An "OK" entity, or an error message otherwise.
+     */
+
     @PostMapping("/request")
     public ResponseEntity<?> request(@RequestBody Map<String, String> organizationId, Authentication authentication) {
         try {
-                organizationService.addJoinRequest(organizationId.get("organization_id"), authentication.getName());
+            organizationService.addJoinRequest(organizationId.get("organization_id"), authentication.getName());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
+    /**
+     * Accepts a join Request of an Organizer.
+     *
+     * @param newMemberId The id of the Organizer who asked to join the Organization.
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
+     * @return The updated OrganizationDTO, or an error message otherwise.
+     */
     @PostMapping("/accept")
     public ResponseEntity<?> accept(@RequestBody Map<String, String> newMemberId, Authentication authentication) {
         try {
@@ -51,35 +69,35 @@ public class OrganizationController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateOrganization(@PathVariable String id, @RequestBody OrganizationDTO organizationDTO, Authentication authentication) {
+    /**
+     * Updated an Organization data.
+     *
+     * @param organizationDTO The OrganizationDTO containing the updated data.
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
+     * @return The updated OrganizationDTO, or an error message otherwise.
+     */
+    @PutMapping
+    public ResponseEntity<?> updateOrganization(@RequestBody OrganizationDTO organizationDTO, Authentication authentication) {
         try {
-            Organization organization = organizationRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Organization not found"));
-
-            if(!organization.getName().equals(authentication.getName()))
-                return ResponseEntity.status(403).body("Forbidden: You can only update your own profile.");
-
-            OrganizationDTO updatedOrganization = organizationService.updateOrganization(id, organizationDTO);
+            OrganizationDTO updatedOrganization = organizationService.updateOrganization(authentication.getName(), organizationDTO);
             return ResponseEntity.ok(updatedOrganization);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @DeleteMapping("/{organizerID}/organization/{organizationID}/request")
-    public ResponseEntity<?> deleteRequest(@PathVariable String organizerID, @PathVariable String organizationName, Authentication authentication) {
+    /**
+     * Deletes an Organizer Request to join the Organization.
+     *
+     * @param orgUsername The Organizer Username whose Request to join must be refused.
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
+     * @return The updated OrganizationDTO, or an error message otherwise.
+     */
+    @DeleteMapping("/request/{orgUsername}")
+    public ResponseEntity<?> deleteRequest(@PathVariable String orgUsername, Authentication authentication) {
         try{
-            Organizer organizer = organizerRepository.findById(organizerID)
-                    .orElseThrow(() -> new RuntimeException("Organizer not found!"));
-
-            if(!organizer.getUsername().equals(authentication.getName()))
-                return ResponseEntity.status(403).body("Forbidden: You can only update your own profile.");
-
-            Organization organization = organizationRepository.findByName(organizationName).orElseThrow(() -> new RuntimeException("Organization not found!"));
-
-            organizationService.deleteRequest(organizerID, organizationName);
-            return ResponseEntity.ok().build();
+            OrganizationDTO organizationDTO = organizationService.deleteRequest(orgUsername, authentication.getName());
+            return ResponseEntity.ok(organizationDTO);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
