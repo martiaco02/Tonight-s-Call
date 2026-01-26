@@ -8,13 +8,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.unipi.tonightscall.DTO.EventDTO;
 import it.unipi.tonightscall.DTO.OrganizationDTO;
+import it.unipi.tonightscall.DTO.OrganizerDTO;
+import it.unipi.tonightscall.entity.document.Organization;
+import it.unipi.tonightscall.entity.document.OrganizationForLinking;
+import it.unipi.tonightscall.entity.document.Organizer;
+import it.unipi.tonightscall.repository.document.OrganizationRepository;
+import it.unipi.tonightscall.repository.document.OrganizerRepository;
 import it.unipi.tonightscall.service.OrganizerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * REST Controller handling operations specific to Organizers.
@@ -29,9 +32,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrganizerController {
 
     private final OrganizerService controllerService;
+    private final OrganizerRepository organizerRepository;
+    private final OrganizationRepository organizationRepository;
 
-    public OrganizerController(OrganizerService controllerService) {
+    public OrganizerController(OrganizerService controllerService, OrganizerRepository organizerRepository, OrganizationRepository organizationRepository) {
         this.controllerService = controllerService;
+        this.organizerRepository = organizerRepository;
+        this.organizationRepository = organizationRepository;
     }
 
     /**
@@ -111,6 +118,32 @@ public class OrganizerController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PutMapping("update/{id}")
+    public ResponseEntity<?> updateOrganizer(@PathVariable String id, @RequestBody OrganizerDTO organizerDTO, Authentication authentication) {
+        try{
+            Organizer org = organizerRepository.findById(id).orElseThrow(() -> new RuntimeException("Organizer not found"));
+            if(!org.getUsername().equals(authentication.getName()))
+                return ResponseEntity.status(403).body("Forbidden: You can only update your own profile.");
+
+            OrganizerDTO updatedOrganizer = controllerService.updateOrganizer(id, organizerDTO);
+            return ResponseEntity.ok(updatedOrganizer);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+    @DeleteMapping("{organizerID}/organization/{organizationID}")
+    public ResponseEntity<?> deleteOrganizationMembership(@PathVariable String organizerID, @PathVariable String organizationName, Authentication authentication) {
+        Organizer organizer = organizerRepository.findById(organizerID).orElseThrow(() -> new RuntimeException("Organizer not found"));
+        if(!organizer.getUsername().equals(authentication.getName()))
+            return ResponseEntity.status(403).body("Forbidden: You can only delete your own memberships.");
+        Organization organization = organizationRepository.findByName(organizationName).orElseThrow(() -> new RuntimeException("Organization not found"));
+        controllerService.deleteOrganizationMembership(organizerID, organizationName);
+        return ResponseEntity.ok().build();
+
     }
 
 }

@@ -1,19 +1,29 @@
 package it.unipi.tonightscall.service;
 
+import it.unipi.tonightscall.DTO.AddressDTO;
 import it.unipi.tonightscall.DTO.EventDTO;
+import it.unipi.tonightscall.DTO.ReviewDTO;
 import it.unipi.tonightscall.DTO.UserDTO;
 import it.unipi.tonightscall.entity.document.*;
 import it.unipi.tonightscall.entity.graph.EventNode;
 import it.unipi.tonightscall.entity.graph.ReviewRelationship;
+import it.unipi.tonightscall.entity.graph.TopicNode;
 import it.unipi.tonightscall.entity.graph.UserNode;
 import it.unipi.tonightscall.repository.document.EventRepository;
 import it.unipi.tonightscall.repository.document.UserRepository;
 import it.unipi.tonightscall.repository.graph.EventGraphRepository;
+import it.unipi.tonightscall.repository.graph.TopicGraphRepository;
 import it.unipi.tonightscall.repository.graph.UserGraphRepository;
 import it.unipi.tonightscall.utilies.Mapper;
+import jakarta.transaction.Transactional;
+import lombok.NonNull;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -23,12 +33,16 @@ public class UserService {
 
     public final UserGraphRepository userGraphRepository;
     public final EventGraphRepository eventGraphRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final TopicGraphRepository topicGraphRepository;
 
-    public UserService(UserRepository userRepository, EventRepository eventRepository, UserGraphRepository userGraphRepository, EventGraphRepository eventGraphRepository) {
+    public UserService(UserRepository userRepository, EventRepository eventRepository, UserGraphRepository userGraphRepository, EventGraphRepository eventGraphRepository, PasswordEncoder passwordEncoder, TopicGraphRepository topicGraphRepository) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.userGraphRepository = userGraphRepository;
         this.eventGraphRepository = eventGraphRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.topicGraphRepository = topicGraphRepository;
     }
 
     public UserDTO addFriendship(String usernameNewFriend, String myName) {
@@ -132,4 +146,385 @@ public class UserService {
 
         return Mapper.mapEventToDTO(event);
     }
+
+    /**
+     * Updates a User data.
+     * <p>
+     * This method:
+     * <ol>
+     *      <li>Checks if the specific user exists</li>
+     *      <li>Checks for consistency: username and date of birth can't change, whereas friendships and reviewed events can't change directly in this function</li>
+     *      <li>Updates the data.</li>
+     *      <li>Saves the User to MongoDB.</li>
+     *      <li>Updates the corresponding node in the Graph Database (Neo4j).</li>
+     * </ol>
+     * </p>
+     *
+     * @param userID The ID of the user to update.
+     * @param newUserDTO The UserDTO containing the updated data.
+     * @return The updated UserDTO.
+     * @throws RuntimeException If the User is not found or if the user tries to update username, date of birth, friendships or reviewed events.
+     */
+
+    @Transactional
+    public UserDTO updateUser(String userID, UserDTO newUserDTO){
+        User oldUser =  userRepository.findById(userID)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        // checking consistency: username can't change
+        if(newUserDTO.getUsername() != null && !newUserDTO.getUsername().equals(oldUser.getUsername())){
+            throw new RuntimeException("Can't update username!");
+        }
+
+        // checking consistency: date_of_birth can't change
+        if(newUserDTO.getDateOfBirth() != null && !newUserDTO.getDateOfBirth().isEqual(oldUser.getDateOfBirth())){
+            throw new RuntimeException("Can't update date of birth!");
+        }
+
+        // checking consistency: friends and reviews can't be directly changed
+        if(newUserDTO.getReviewedEvents() != null && !newUserDTO.getReviewedEvents().isEmpty()){
+            throw new RuntimeException("Can't update reviewed events!");
+        }
+
+        if (newUserDTO.getFriends() != null && !newUserDTO.getFriends().isEmpty()){
+            throw new RuntimeException("Can't update friends!");
+        }
+
+        boolean update_graph = false;
+
+        // updating the inserted data
+        if(newUserDTO.getName() != null) {oldUser.setName(newUserDTO.getName());}
+        if(newUserDTO.getLastname() != null) {oldUser.setLastname(newUserDTO.getLastname());}
+        if(newUserDTO.getEmail() != null) {oldUser.setEmail(newUserDTO.getEmail());}
+        if(newUserDTO.getPassword() != null) {oldUser.setPassword(passwordEncoder.encode(newUserDTO.getPassword()));}
+        if(newUserDTO.getInterests() != null) {
+            update_graph = true;
+            oldUser.setInterests(newUserDTO.getInterests());
+        }
+
+        if(newUserDTO.getHomeTown() != null) {
+            // updating all of the address data
+            Address newAddress = new Address();
+
+            newAddress.setFullAddress(newUserDTO.getHomeTown().getFullAddress());
+            newAddress.setCityName(newUserDTO.getHomeTown().getCityName());
+
+            // we have to update the location (coordinates)
+            Location newLocation = new Location();
+            newLocation.setType(newUserDTO.getHomeTown().getLoc().getType());
+            newLocation.setCoordinates(newUserDTO.getHomeTown().getLoc().getCoordinates());
+            newAddress.setLocation(newLocation);
+
+            oldUser.setAddress(newAddress);
+            // in this case we also have to update the graph (coordinates)
+            update_graph = true;
+        };
+
+        // updating MongoDB document
+        userRepository.save(oldUser);
+
+        // updating graphDB if necessary
+        if(update_graph){
+            UserNode myNode = userGraphRepository.findById(oldUser.getId())
+                    .orElseThrow(() -> new RuntimeException("User Node not found!"));
+
+            if (oldUser.getAddress() != null && oldUser.getAddress().getLocation() != null) {
+                myNode.setCoordinates(oldUser.getAddress().getLocation().getCoordinates());
+            }
+
+            // 2. Update Interests (if changed)
+            if (newUserDTO.getInterests() != null) {
+                // Clear existing relationships first
+                myNode.getInterests().clear();
+
+                // Loop through the new list of strings using index 'i'
+                for (int i = 0; i < newUserDTO.getInterests().size(); i++) {
+                    String topicName = newUserDTO.getInterests().get(i);
+
+                    // Find the topic node in the DB by its name
+                    // (Ensure you have injected 'topicGraphRepository' in your Service!)
+                    TopicNode topicNode = topicGraphRepository.findById(topicName)
+                            .orElseThrow(() -> new RuntimeException("Topic Node not found!"));
+
+                    myNode.getInterests().add(topicNode);
+                }
+            }
+
+            userGraphRepository.save(myNode);
+        }
+
+        return Mapper.mapUserToDto(oldUser);
+
+    }
+
+    /**
+     * Updates a Review.
+     * <p>
+     * This method:
+     * <ol>
+     *      <li>Checks if the specific user exists.</li>
+     *      <li>Checks if the event exists.</li>
+     *      <li>Updates the review for the user.</li>
+     *      <li>Updates the review and score for the event.</li>
+     *      <li>Saves the User to MongoDB.</li>
+     *      <li>Saves the Event to MongoDB.</li>
+     *      <li>Updates the corresponding node in the Graph Database (Neo4j).</li>
+     * </ol>
+     * </p>
+     *
+     * @param EventID The ID of the event the review was written for.
+     * @param newReviewDTO The ReviewDTO containing the updated data.
+     * @return The updated ReviewDTO.
+     * @throws RuntimeException If the User is not found, if the Event is not found or if the Review is not found in the event's review list.
+     */
+
+    @Transactional
+    public ReviewDTO updateReview(String EventID, ReviewDTO newReviewDTO){
+        User user = userRepository.findByUsername(newReviewDTO.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        Event event = eventRepository.findById(EventID)
+                .orElseThrow(() -> new RuntimeException("Event not found!"));
+
+
+        // we have to update both the specific user's reviews and the specific event's reviews
+
+        // updating the user's reviews: looking for the specific event's review in the list
+        // of the reviews the specific user left
+        if (user.getReviewedEvents() != null) {
+            for(int i=0; i<user.getReviewedEvents().size(); i++){
+                ReviewEvent re =  user.getReviewedEvents().get(i);
+                if(re.getEventName().equals(event.getEventName())){
+                    re.setScore(newReviewDTO.getScore());
+                    break;
+                }
+            }
+        }
+
+        // updating the event's reviews: looking for the review left by the specific user in
+        // the list
+        int oldScore = 0;
+        boolean foundReview = false;
+        if(event.getReviews() != null) {
+            for(int i=0; i<event.getReviews().size(); i++){
+                Review re =  event.getReviews().get(i);
+                if(re.getUsername().equals(user.getUsername())){
+                    oldScore = re.getScore();
+                    re.setScore(newReviewDTO.getScore());
+                    re.setText(newReviewDTO.getText());
+                    foundReview = true;
+                    break;
+                }
+            }
+        }
+
+        if(!foundReview){
+            throw new RuntimeException("Review not found!");
+        }
+
+        // updating the event total score
+        double newScore = (event.getEventScore()*event.getTotalReview()-oldScore+ newReviewDTO.getScore())/event.getTotalReview();
+        event.setEventScore(newScore);
+
+        // saving document
+        userRepository.save(user);
+        eventRepository.save(event);
+
+        // updating graphs if needed: only the user's node and the review node need to be updated
+        UserNode userNode =  userGraphRepository.findById(user.getId())
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        if(userNode.getReviews() != null) {
+            for(int i=0; i<userNode.getReviews().size(); i++){
+                ReviewRelationship rr = userNode.getReviews().get(i);
+                if(rr.getEvent().getId().equals(EventID)){
+                    rr.setScore(newReviewDTO.getScore());
+                    break;
+                }
+            }
+        }
+        userGraphRepository.save(userNode);
+
+        newReviewDTO.setUsername(user.getUsername());
+        return newReviewDTO;
+    }
+
+    /**
+     * Deletes a Review.
+     * <p>
+     * This method:
+     * <ol>
+     *      <li>Checks if the specific user exists.</li>
+     *      <li>Checks if the specific event exists.</li>
+     *      <li>Deletes the review from the user.</li>
+     *      <li>Deletes the review from the event.</li>
+     *      <li>Saves changes to MongoDB</li>
+     *      <li>Saves changes in the Graph Database (Neo4j).</li>
+     * </ol>
+     * </p>
+     *
+     * @param eventID The ID of the event the Review belongs to.
+     * @param userID The ID of the user the Review was written by.
+     * @throws RuntimeException If the User is not found or if the event is not found.
+     */
+
+    @Transactional
+    public void deleteReview(String eventID, String userID){
+        User user = userRepository.findById(userID)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        Event event = eventRepository.findById(eventID)
+                .orElseThrow(() -> new RuntimeException("Event not found!"));
+
+        UserNode userNode = userGraphRepository.findById(userID)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        // deleting the review from the user
+        for(int i=0; i<user.getReviewedEvents().size(); i++){
+            ReviewEvent re =  user.getReviewedEvents().get(i);
+            if(re.getEventName().equals(event.getEventName())){
+                user.getReviewedEvents().remove(i);
+                break;
+            }
+        }
+
+        int left_score = 0;
+        // deleting the review from the event
+        for(int i=0; i<event.getReviews().size(); i++){
+            Review re =  event.getReviews().get(i);
+            if(re.getUsername().equals(user.getUsername())){
+                left_score = re.getScore();
+                user.getReviewedEvents().remove(i);
+                // updating the event score
+                double total_score = event.getEventScore()*event.getTotalReview() - left_score;
+                int reviews_number = event.getTotalReview() - 1;
+
+                total_score = total_score / reviews_number;
+                event.setEventScore(total_score);
+                event.setTotalReview(reviews_number);
+            }
+        }
+
+        // updating also user graph
+        for(int i=0; i<userNode.getReviews().size(); i++){
+            if(userNode.getReviews().get(i).getEvent().getId().equals(event.getId())){
+                userNode.getReviews().remove(i);
+                userGraphRepository.save(userNode);
+                break;
+            }
+        }
+
+        userRepository.save(user);
+        eventRepository.save(event);
+
+    }
+
+    /**
+     * Deletes an Attendance to an Event.
+     * <p>
+     * This method:
+     * <ol>
+     *      <li>Checks if the specific user exists</li>
+     *      <li>Checks if the specific event exists</li>
+     *      <li>Deletes the attendance</li>
+     *      <li>Saves the changes to MongoDB.</li>
+     *      <li>Saves the changes to the User Node in the Graph Database (Neo4j).</li>
+     * </ol>
+     * </p>
+     *
+     * @param eventID The ID of the event the user was going to attend.
+     * @param userID The ID of the user whose attendee must be deleted.
+     * @throws RuntimeException If the User is not found or if the event is not found.
+     */
+    @Transactional
+    public void deleteAttendance(String eventID, String userID){
+        User user = userRepository.findById(userID)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+        Event event = eventRepository.findById(eventID)
+                .orElseThrow(() -> new RuntimeException("Event not found!"));
+        UserNode userNode = userGraphRepository.findById(userID)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+        EventNode eventNode = eventGraphRepository.findById(eventID)
+                .orElseThrow(() -> new RuntimeException("Event not found!"));
+
+
+        for(int i=0; i<event.getAttendees().size(); i++){
+            if(event.getAttendees().get(i).getUsername().equals(user.getUsername())){
+                event.getAttendees().remove(i);
+                break;
+            }
+        }
+
+        if(userNode.getAttendees() != null){
+            boolean graphChanged = userNode.getAttendees().removeIf(
+                    e -> e.getId().equals(eventID)
+            );
+            if (graphChanged) {
+                userGraphRepository.save(userNode);
+            }
+        }
+
+        eventRepository.save(event);
+        userRepository.save(user);
+
+    }
+
+    /**
+     * Deletes a friendship between two users.
+     * <p>
+     * This method:
+     * <ol>
+     *      <li>Checks if the specific user exists</li>
+     *      <li>Checks if the specific user's friend exists</li>
+     *      <li>Checks if the users are actually friends (user's friend list and friend's friend list)</li>
+     *      <li>Saves the changes to MongoDB.</li>
+     *      <li>Saves the changes to the User Nodes in the Graph Database (Neo4j).</li>
+     * </ol>
+     * </p>
+     *
+     * @param userID The ID of the User who wants to unfriend another User.
+     * @param friendID the ID of the User that has to be unfriended.
+     * @throws RuntimeException If one of the two Users is not found or if the friendship is not found.
+     */
+
+    @Transactional
+    public void deleteFriendship(String userID, String friendID){
+        User user = userRepository.findById(userID)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        User friend = userRepository.findById(friendID)
+                .orElseThrow(() -> new RuntimeException("User friend not found!"));
+
+        // checking user's friend list to find friendship with friend and remove it
+        if(user.getFriends() != null && user.getFriends().contains(friendID)){
+            user.getFriends().remove(friendID);
+        }
+
+        // checking friend's friend list to find friendship with user and remove it
+        if(friend.getFriends() != null &&  friend.getFriends().contains(userID)){
+            friend.getFriends().remove(userID);
+        }
+
+        userRepository.save(user);
+        userRepository.save(friend);
+
+        UserNode userNode = userGraphRepository.findById(userID)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        UserNode friendNode = userGraphRepository.findById(friendID)
+                .orElseThrow(() -> new RuntimeException("User friend not found!"));
+
+
+        if(userNode.getFriends() != null){
+            if(userNode.getFriends().removeIf(f -> f.getId().equals(friendID)))
+                userGraphRepository.save(userNode);
+        }
+
+        if(friendNode.getFriends() != null){
+            if(friendNode.getFriends().removeIf(f -> f.getId().equals(userID)))
+                userGraphRepository.save(friendNode);
+        }
+
+    }
+
 }
