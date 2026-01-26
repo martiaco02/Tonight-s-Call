@@ -218,7 +218,7 @@ public class UserService {
             oldUser.setAddress(newAddress);
             // in this case we also have to update the graph (coordinates)
             update_graph = true;
-        };
+        }
 
         // updating MongoDB document
         userRepository.save(oldUser);
@@ -394,7 +394,7 @@ public class UserService {
             Review re =  event.getReviews().get(i);
             if(re.getUsername().equals(user.getUsername())){
                 left_score = re.getScore();
-                user.getReviewedEvents().remove(i);
+                event.getReviews().remove(i);
                 // updating the event score
                 double total_score = event.getEventScore()*event.getTotalReview() - left_score;
                 int reviews_number = event.getTotalReview() - 1;
@@ -444,8 +444,6 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Event not found!"));
         UserNode userNode = userGraphRepository.findById(userID)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
-        EventNode eventNode = eventGraphRepository.findById(eventID)
-                .orElseThrow(() -> new RuntimeException("Event not found!"));
 
 
         for(int i=0; i<event.getAttendees().size(); i++){
@@ -483,26 +481,26 @@ public class UserService {
      * </p>
      *
      * @param userID The ID of the User who wants to unfriend another User.
-     * @param friendID the ID of the User that has to be unfriended.
+     * @param friendUsername the Username of the User that has to be unfriended.
      * @throws RuntimeException If one of the two Users is not found or if the friendship is not found.
      */
 
     @Transactional
-    public void deleteFriendship(String userID, String friendID){
+    public void deleteFriendship(String userID, String friendUsername){
         User user = userRepository.findById(userID)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        User friend = userRepository.findById(friendID)
+        User friend = userRepository.findByUsername(friendUsername)
                 .orElseThrow(() -> new RuntimeException("User friend not found!"));
 
         // checking user's friend list to find friendship with friend and remove it
-        if(user.getFriends() != null && user.getFriends().contains(friendID)){
-            user.getFriends().remove(friendID);
+        if(user.getFriends() != null && user.getFriends().contains(friend.getUsername())){
+            user.getFriends().remove(friend.getUsername());
         }
 
         // checking friend's friend list to find friendship with user and remove it
         if(friend.getFriends() != null &&  friend.getFriends().contains(userID)){
-            friend.getFriends().remove(userID);
+            friend.getFriends().remove(user.getUsername());
         }
 
         userRepository.save(user);
@@ -511,17 +509,17 @@ public class UserService {
         UserNode userNode = userGraphRepository.findById(userID)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        UserNode friendNode = userGraphRepository.findById(friendID)
+        UserNode friendNode = userGraphRepository.findById(friend.getId())
                 .orElseThrow(() -> new RuntimeException("User friend not found!"));
 
 
         if(userNode.getFriends() != null){
-            if(userNode.getFriends().removeIf(f -> f.getId().equals(friendID)))
+            if(userNode.getFriends().removeIf(f -> f.getUsername().equals(friend.getUsername())))
                 userGraphRepository.save(userNode);
         }
 
         if(friendNode.getFriends() != null){
-            if(friendNode.getFriends().removeIf(f -> f.getId().equals(userID)))
+            if(friendNode.getFriends().removeIf(f -> f.getUsername().equals(user.getUsername())))
                 userGraphRepository.save(friendNode);
         }
 

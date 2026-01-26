@@ -120,14 +120,12 @@ public class OrganizerController {
         }
     }
 
-    @PutMapping("update/{id}")
-    public ResponseEntity<?> updateOrganizer(@PathVariable String id, @RequestBody OrganizerDTO organizerDTO, Authentication authentication) {
+    @PutMapping
+    public ResponseEntity<?> updateOrganizer(@RequestBody OrganizerDTO organizerDTO, Authentication authentication) {
         try{
-            Organizer org = organizerRepository.findById(id).orElseThrow(() -> new RuntimeException("Organizer not found"));
-            if(!org.getUsername().equals(authentication.getName()))
-                return ResponseEntity.status(403).body("Forbidden: You can only update your own profile.");
+            Organizer org = organizerRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("Organizer not found"));
 
-            OrganizerDTO updatedOrganizer = controllerService.updateOrganizer(id, organizerDTO);
+            OrganizerDTO updatedOrganizer = controllerService.updateOrganizer(org.getId(), organizerDTO);
             return ResponseEntity.ok(updatedOrganizer);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

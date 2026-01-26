@@ -56,19 +56,14 @@ public class UserController {
     }
 
 
-    @PutMapping("{id}")
-    public ResponseEntity<?> updateUser(@PathVariable String id,
+    @PutMapping
+    public ResponseEntity<?> updateUser(
                                         @RequestBody UserDTO user,
                                         Authentication authentication) {
         try {
-            User existingUser = userRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            User existingUser = userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new RuntimeException("User not found!"));
 
-            if (!existingUser.getUsername().equals(authentication.getName())) {
-                return ResponseEntity.status(403).body("Forbidden: You can only update your own profile.");
-            }
-
-            UserDTO updatedUser = userService.updateUser(id, user);
+            UserDTO updatedUser = userService.updateUser(existingUser.getId(), user);
             return ResponseEntity.ok(updatedUser);
 
         } catch (RuntimeException e) {
@@ -93,16 +88,12 @@ public class UserController {
     }
 
     @DeleteMapping("review/{eventID}")
-    public ResponseEntity<?> deleteReview(@PathVariable String eventID, String userID, Authentication authentication) {
+    public ResponseEntity<?> deleteReview(@PathVariable String eventID, Authentication authentication) {
         try{
-            User user = userRepository.findById(userID)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            User user = userRepository.findByUsername(authentication.getName())
+                            .orElseThrow(() -> new RuntimeException("User not found"));
 
-            if(!user.getUsername().equals(authentication.getName())) {
-                return ResponseEntity.status(403).body("Forbidden: You can only delete your own reviews.");
-            }
-
-            userService.deleteReview(eventID, userID);
+            userService.deleteReview(eventID, user.getId());
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -110,32 +101,27 @@ public class UserController {
 
     }
 
-    @DeleteMapping("attendance/{eventID}")
-    public ResponseEntity<?> deleteAttendance(@PathVariable String eventID, String userID, Authentication authentication) {
+    @DeleteMapping("attending/{eventID}")
+    public ResponseEntity<?> deleteAttendance(@PathVariable String eventID, Authentication authentication) {
         try{
-            User user = userRepository.findById(userID)
+            User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
-            if(!user.getUsername().equals(authentication.getName())) {
-                return ResponseEntity.status(403).body("Forbidden: You can only delete your own reviews.");
-            }
 
-            userService.deleteAttendance(eventID, userID);
+
+            userService.deleteAttendance(eventID, user.getId());
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @DeleteMapping("{userID}/friendship/{friendID}")
-    public ResponseEntity<?> deleteFriendship(@PathVariable String userID, @PathVariable String friendID, Authentication authentication) {
+    @DeleteMapping("/friendship/{friendID}")
+    public ResponseEntity<?> deleteFriendship(@PathVariable String friendID, Authentication authentication) {
         try{
-            User user = userRepository.findById(userID)
+            User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
-            if(!user.getUsername().equals(authentication.getName())) {
-                return ResponseEntity.status(403).body("Forbidden: You can only delete your own friendships.");
-            }
 
-            userService.deleteFriendship(userID, friendID);
+            userService.deleteFriendship(user.getId(), friendID);
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
