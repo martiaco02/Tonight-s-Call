@@ -229,7 +229,7 @@ public class OrganizerService {
 
     @Transactional
     public OrganizerDTO updateOrganizer(String username, OrganizerDTO newOrganizerDTO){
-        Organizer oldOrganizer = organizerRepository.findById(username)
+        Organizer oldOrganizer = organizerRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
 
         // checking consistency: username can't change

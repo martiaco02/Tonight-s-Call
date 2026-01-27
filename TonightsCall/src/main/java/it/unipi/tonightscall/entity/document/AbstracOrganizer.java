@@ -49,6 +49,9 @@ public class AbstracOrganizer {
     @Field("events")
     private List<EventOrganization> events;
 
+    /**
+     * Type of organizer: can be 'ORGANIZATION' or 'ORGANIZER'
+     */
     @Field("type")
     private String type;
 }
