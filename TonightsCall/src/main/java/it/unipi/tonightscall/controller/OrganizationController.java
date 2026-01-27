@@ -12,13 +12,20 @@ import it.unipi.tonightscall.service.OrganizerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * REST Controller handling operations specific to Organization.
  */
 @RestController
 @RequestMapping("/organization")
+@Tag(name = "Organization", description = "Endpoints for Organizations' operations")
 public class OrganizationController {
 
     private final OrganizationService organizationService;
@@ -42,6 +49,24 @@ public class OrganizationController {
      * @return An "OK" entity, or an error message otherwise.
      */
 
+    @Operation(summary = "Registers a new Request", description = "Creates a new pending join request in the organization's list.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Request registered successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganizationDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input, request already exists or Organization's member already exists.",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
     @PostMapping("/request")
     public ResponseEntity<?> request(@RequestBody Map<String, String> organizationId, Authentication authentication) {
         try {
@@ -59,6 +84,26 @@ public class OrganizationController {
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @return The updated OrganizationDTO, or an error message otherwise.
      */
+
+    @Operation(summary = "Accepts a Request", description = "Accepts a pending join request in the organization's list.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Request accepted successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganizationDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input, Organization or Organizer are not found or their pending request is not found.",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
+
     @PostMapping("/accept")
     public ResponseEntity<?> accept(@RequestBody Map<String, String> newMemberId, Authentication authentication) {
         try {
@@ -76,6 +121,26 @@ public class OrganizationController {
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @return The updated OrganizationDTO, or an error message otherwise.
      */
+
+    @Operation(summary = "Updates an Organization data", description = "Updates information about an existing Organization.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Organization updated successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganizationDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input or Organization is not found.",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
+
     @PutMapping
     public ResponseEntity<?> updateOrganization(@RequestBody OrganizationDTO organizationDTO, Authentication authentication) {
         try {
@@ -93,6 +158,26 @@ public class OrganizationController {
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @return The updated OrganizationDTO, or an error message otherwise.
      */
+
+    @Operation(summary = "Deletes a Request", description = "Removes a pending join request from the organization's list.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Request removed successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganizationDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input, Organization or Organizer whose request must be removed are not found.",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
+
     @DeleteMapping("/request/{orgUsername}")
     public ResponseEntity<?> deleteRequest(@PathVariable String orgUsername, Authentication authentication) {
         try{

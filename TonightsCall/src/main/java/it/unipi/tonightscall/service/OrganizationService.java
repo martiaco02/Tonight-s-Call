@@ -197,6 +197,7 @@ public class OrganizationService {
                 }
             }
         }
+
         return Mapper.mapOrganizationToDto(organization);
 
     }

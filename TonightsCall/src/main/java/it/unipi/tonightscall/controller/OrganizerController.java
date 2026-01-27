@@ -108,13 +108,6 @@ public class OrganizerController {
             )
     })
 
-    /**
-     * Registers a new Event made by the currently authenticated Organizer.
-     *
-     * @param eventDTO The details of the event to be created.
-     * @param authentication  The security context containing the current user's details (injected by Spring Security).
-     * @return The created EventDTO if successful, or an error message otherwise.
-     */
     @PostMapping("/registerEvent")
     public ResponseEntity<?> registerEvent(@RequestBody EventDTO eventDTO, Authentication authentication) {
         try{
@@ -136,6 +129,27 @@ public class OrganizerController {
      * @return The updated OrganizerDTO if successful, or an error message otherwise.
      */
 
+    @Operation(
+            summary = "Updated an Organizer data",
+            description = "Updates information about an existing Organizer."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Organizer updated successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganizerDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input, Organizer or Organization are not found",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
     @PutMapping
     public ResponseEntity<?> updateOrganizer(@RequestBody OrganizerDTO organizerDTO, Authentication authentication) {
         try{
@@ -154,6 +168,29 @@ public class OrganizerController {
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @return The updated OrganizerDTO if successful, or an error message otherwise.
      */
+
+
+    @Operation(
+            summary = "Removes a membership from an Organization",
+            description = "Removes a an Organizer from the member list of an Organization."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Membership removed successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganizerDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input, Organizer or Organization are not found",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
 
 
     @DeleteMapping("organization/{organizationID}")

@@ -90,12 +90,14 @@ public class UserDTO {
     /**
      * A list of topics or activities the user is interested in.
      */
+    @JsonProperty("interests")
     @Schema(description = "List of the User's interests", example = "[\"TECH\", \"MUSIC\"]")
     private List<String> interests;
 
     /**
      * A list of usernames representing the user's friends.
      */
+    @JsonProperty("friends")
     @Schema(description = "List of the user's friends", example = "[\"Marty\", \"AXB\"]")
     private List<String> friends;
 

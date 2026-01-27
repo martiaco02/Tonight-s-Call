@@ -586,6 +586,9 @@ public class UserService {
         User friend = userRepository.findByUsername(friendUsername)
                 .orElseThrow(() -> new RuntimeException("User friend not found!"));
 
+        if(!user.getFriends().contains(friend) || !friend.getFriends().contains(user)){
+            throw new RuntimeException("You are not friend with this user!");
+        }
         // checking user's friend list to find friendship with friend and remove it
         if(user.getFriends() != null && user.getFriends().contains(friend.getUsername())){
             user.getFriends().remove(friend.getUsername());
