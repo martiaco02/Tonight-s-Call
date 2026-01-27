@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.geo.Distance;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.geo.Point;
 
 import java.awt.*;
 import java.time.LocalDate;
@@ -41,30 +42,52 @@ public class EventService {
      *
      * @param pageable used to manage pagination
      */
-    public Page<@NonNull Event> getAllEvents(Pageable pageable) { return this.eventRepository.findAll(pageable); }
+    public Page<@NonNull EventDTO> getAllEvents(Pageable pageable) {
+        return this.eventRepository.findAll(pageable).map(Mapper::mapEventToDTO);
+    }
 
     /**
      * Find an event given its id
      *
      * @param id event's id
+     * @return the event having the id's params or null if it doesn't exist
      */
-    public Optional<Event> getEventById(String id) { return this.eventRepository.findById(id); }
+    public EventDTO getEventById(String id) {
+        Optional<Event> event = this.eventRepository.findById(id);
+        return event.map(Mapper::mapEventToDTO).orElse(null);
+    }
 
     /**
      * Find events that contain at least one of the specified topics
      *
      * @param topics the list of topics
-     * @param pageable used to manage pagination
+     * @param pageable used to manage
+     *
+     * @return Page<EventDTO> conteing the events or a null value if nothing was found
      */
-    public Page<@NonNull Event> getEventsByTopic(List<String> topics, Pageable pageable) { return this.eventRepository.findByCategoriesIn(topics, pageable); }
+    public Page<@NonNull EventDTO> getEventsByTopic(List<String> topics, Pageable pageable) {
+        Page<@NonNull Event> events = this.eventRepository.findByCategoriesIn(topics, pageable);
+        if (events.isEmpty())
+            return null;
+
+        return events.map(Mapper::mapEventToDTO);
+    }
 
     /**
      * Find events that start at the specified date or later
      *
      * @param startingDate the starting date of the event
      * @param pageable used to manage pagination
+     *
+     * @return Page<EventDTO> conteing the events or a null value if nothing was found
      */
-    public Page<@NonNull Event> getEventsByDate(LocalDate startingDate, Pageable pageable) { return this.eventRepository.findByStartingDateGreaterThanEqual(startingDate, pageable); }
+    public Page<@NonNull EventDTO> getEventsByDate(LocalDate startingDate, Pageable pageable) {
+        Page<@NonNull Event> events = this.eventRepository.findByStartingDateGreaterThanEqual(startingDate, pageable);
+        if (events.isEmpty())
+            return null;
+
+        return events.map(Mapper::mapEventToDTO);
+    }
 
     /**
      * Find events based on their location
@@ -73,7 +96,12 @@ public class EventService {
      * @param distance the max possible distance from location
      * @param pageable used to manage pagination
      */
-    public Page<@NonNull Event> getEventsByLocation(Point location, Distance distance, Pageable pageable) { return this.eventRepository.findByPositionLocationNear(location, distance, pageable); }
+    public Page<@NonNull EventDTO> getEventsByLocation(Point location, Distance distance, Pageable pageable) {
+        Page<@NonNull Event> events = this.eventRepository.findByPositionLocationNear(location, distance, pageable);
+        if (events.isEmpty())
+            return null;
+        return events.map(Mapper::mapEventToDTO);
+    }
 
     /**
      * Find every event containing at least one of the specified topics and starting at the specified date or later
@@ -82,8 +110,13 @@ public class EventService {
      * @param date the minimum starting date of the events
      * @param pageable used to manage pagination
      */
-    public Page<@NonNull Event> getEventsByTopicAndDate(List<String> categories, LocalDate date, Pageable pageable) {
-        return this.eventRepository.findByCategoriesInAndStartingDateGreaterThanEqual(categories, date, pageable);
+    public Page<@NonNull EventDTO> getEventsByTopicAndDate(List<String> categories, LocalDate date, Pageable pageable) {
+
+        Page<@NonNull Event> events = this.eventRepository.findByCategoriesIn(categories, pageable);
+        if (events.isEmpty())
+            return null;
+
+        return events.map(Mapper::mapEventToDTO);
     }
 
     /**
@@ -105,16 +138,27 @@ public class EventService {
      * @param newEventDTO The EventDTO with the updated data.
      * @return The updated EventDTO.
      * @throws RuntimeException If the event is not found, if the user isn't the organizer of the event or if illegal fields are updated
+     * @throws IllegalArgumentException If the event doesn't exist
+     * @throws IllegalAccessException If the user hasn't got the authorization for modify this event
      */
-
     @Transactional
-    public EventDTO updateEvent(String event_id, String username, EventDTO newEventDTO){
-        Organizer organizer = organizerRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
+    public EventDTO updateEvent(String event_id, String username, EventDTO newEventDTO) throws IllegalAccessException {
+        Organizer organizer = organizerRepository.findByUsername(username) //TODO: modificare in modo che anche le organizazzioni abbiano accesso
+                .orElseThrow(() -> new IllegalArgumentException("Organizer Not Found!"));
+
+        boolean flag = false;
+        for (EventOrganization eo : organizer.getEvents()) {
+            if (eo.getId().equals(event_id)) {
+                flag = true;
+                break;
+            }
+        }
+        if (!flag)
+            throw new IllegalAccessException("This Organizer or Organization can't modify this event");
 
         //  checking if the event exists
         Event oldEvent = eventRepository.findById(event_id)
-                .orElseThrow(() -> new RuntimeException("Event Not Found!"));
+                .orElseThrow(() -> new IllegalArgumentException("Event Not Found!"));
 
         // checking consistency: event id can't change
         if(newEventDTO.getId() != null && !oldEvent.getId().equals(newEventDTO.getId())){
