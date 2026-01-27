@@ -15,10 +15,16 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Model representing a user request")
 public class RequestDTO {
 
+    /**
+     * Unique identifier of the organizer who wants to join an Organization.
+     */
     @JsonProperty("id")
-    @Schema(description = "Unique identifier of the organizer that whant to join the organization", example = "65a12b3c4d5e6f7g8h9i0j1k")
+    @Schema(description = "Unique identifier of the organizer that wants to join the organization", example = "65a12b3c4d5e6f7g8h9i0j1k")
     private String id;
 
+    /**
+     * Username of the organizer who wants to join an Organization.
+     */
     @JsonProperty("username")
     @Schema(description = "Username of the requester", example = "wannabe_member")
     private String username;

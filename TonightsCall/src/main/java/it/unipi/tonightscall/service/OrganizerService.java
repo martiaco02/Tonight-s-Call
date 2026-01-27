@@ -2,6 +2,8 @@ package it.unipi.tonightscall.service;
 
 import it.unipi.tonightscall.DTO.EventDTO;
 import it.unipi.tonightscall.DTO.OrganizationDTO;
+import it.unipi.tonightscall.DTO.OrganizerDTO;
+import it.unipi.tonightscall.DTO.StatisticsDTO;
 import it.unipi.tonightscall.entity.document.*;
 import it.unipi.tonightscall.entity.graph.EventNode;
 import it.unipi.tonightscall.entity.graph.OrganizerNode;
@@ -14,11 +16,13 @@ import it.unipi.tonightscall.repository.graph.OrganizerGraphRepository;
 import it.unipi.tonightscall.repository.graph.TopicGraphRepository;
 import it.unipi.tonightscall.utilies.Mapper;
 import it.unipi.tonightscall.utilies.Roles;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service class handling complex business logic for Controllers.
@@ -37,6 +41,7 @@ public class OrganizerService {
     private final OrganizerGraphRepository organizerGraphRepository;
     private final EventGraphRepository  eventGraphRepository;
     private final TopicGraphRepository topicGraphRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public OrganizerService(
             OrganizationRepository organizationRepository,
@@ -44,15 +49,20 @@ public class OrganizerService {
             EventRepository eventRepository,
             OrganizerGraphRepository organizerGraphRepository,
             EventGraphRepository eventGraphRepository,
-            TopicGraphRepository topicGraphRepository
-    ) {
+            TopicGraphRepository topicGraphRepository,
+            PasswordEncoder passwordEncoder) {
         this.organizationRepository = organizationRepository;
         this.eventRepository = eventRepository;
         this.organizerGraphRepository = organizerGraphRepository;
         this.organizerRepository = organizerRepository;
         this.eventGraphRepository = eventGraphRepository;
         this.topicGraphRepository = topicGraphRepository;
+        this.passwordEncoder = passwordEncoder;
     }
+
+    public List<Organizer> getAllOrganizers() { return this.organizerRepository.findAll(); }
+
+    public Optional<Organizer> getOrganizerById(String id) { return this.organizerRepository.findById(id); }
 
     /**
      * Registers a new Organization linked to an existing Organizer.
@@ -104,7 +114,7 @@ public class OrganizerService {
         );
 
         organizerRepository.save(me);
-        OrganizerNode savedNode = organizerGraphRepository.save(organizerNode);
+        organizerGraphRepository.save(organizerNode);
 
         return Mapper.mapOrganizationToDto(saved);
 
@@ -200,4 +210,134 @@ public class OrganizerService {
 
         return Mapper.mapEventToDTO(saved);
     }
+
+
+    /**
+     * Updates and Organizer data
+     * <p>
+     * This method:
+     * <ol>
+     *      <li>Checks if the Organizer exists.</li>
+     *      <li>Checks for consistency: username and date of birth can't be changed</li>
+     *      <li>Updates the specific data for the organizer</li>
+     *      <li>Updates the Organizations data if the Organizer is part of some</li>
+     *      <li>Saves the updated Organizer to MongoDB.</li>
+     *      <li>Updates the corresponding node in the Graph Database (Neo4j).</li>
+     * </ol>
+     * </p>
+     *
+     * @param username The Username of the Organizer to update.
+     * @param newOrganizerDTO The OrganizerDTO with the updated data.
+     * @return The updated OrganizerDTO.
+     * @throws RuntimeException If the organizer is not found or if the user tries to update username or password.
+     */
+
+    @Transactional
+    public OrganizerDTO updateOrganizer(String username, OrganizerDTO newOrganizerDTO){
+        Organizer oldOrganizer = organizerRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
+
+        // checking consistency: username can't change
+        if(newOrganizerDTO.getUsername() != null && !oldOrganizer.getUsername().equals(newOrganizerDTO.getUsername())){
+            throw new RuntimeException("Can't change username!");
+        }
+
+        // checking consistency: date of birth can't change
+        if(newOrganizerDTO.getDateOfBirth() != null && !oldOrganizer.getDateOfBirth().isEqual(newOrganizerDTO.getDateOfBirth())){
+            throw new RuntimeException("Can't change date of birth!");
+        }
+
+        boolean updateName = false;
+        boolean updatePsw = false;
+        // updating the new data
+        if(newOrganizerDTO.getName() != null){
+            updateName = true;
+            oldOrganizer.setName(newOrganizerDTO.getName());
+        }
+        if(newOrganizerDTO.getLastName() != null){oldOrganizer.setLastName(newOrganizerDTO.getLastName());}
+        if(newOrganizerDTO.getPassword() != null){
+            updatePsw = true;
+            oldOrganizer.setPassword(passwordEncoder.encode(newOrganizerDTO.getPassword()));
+        }
+        if(newOrganizerDTO.getVatNumber() != null){ oldOrganizer.setVatNumber(newOrganizerDTO.getVatNumber());}
+        if(newOrganizerDTO.getEmail() != null){ oldOrganizer.setEmail(newOrganizerDTO.getEmail());}
+
+        //if the name and psw changed we need to propagate it to organizer's organizations members list
+        if((updateName || updatePsw) && oldOrganizer.getOrganizations() != null){
+            for(int i=0; i<oldOrganizer.getOrganizations().size(); i++){
+                Organization org = organizationRepository.findById(oldOrganizer.getOrganizations().get(i).getId())
+                        .orElseThrow(() -> new RuntimeException("Organization Not Found!"));
+                // searching for the specific member in the organization and updating the data
+                for(int j=0; j<org.getMembers().size(); j++){
+                    if(org.getMembers().get(j).getId().equals(oldOrganizer.getId())){
+                        if(updateName){
+                            org.getMembers().get(j).setName(newOrganizerDTO.getName());
+                        }
+                        if(updatePsw){
+                            org.getMembers().get(j).setPassword(newOrganizerDTO.getPassword());
+                        }
+                        break;
+                    }
+                }
+                //updating document
+                organizationRepository.save(org);
+
+            }
+
+        }
+        // updating document
+        organizerRepository.save(oldOrganizer);
+
+        return Mapper.mapOrganizerToDto(oldOrganizer);
+    }
+
+    /**
+     * Deletes the membership of an Organizer to an Organization
+     * <p>
+     * This method:
+     * <ol>
+     *      <li>Checks if the Organizer exists.</li>
+     *      <li>Checks if the Organization exists.</li>
+     *      <li>Deletes the Organization from the Organizer's organizations.</li>
+     *      <li>Deletes the Organizer (Member) from the Organization's members.</li>
+     *      <li>Saves the updated Organizer to MongoDB.</li>
+     * </ol>
+     * </p>
+     *
+     * @param username The Username of the Organizer whose membership must be deleted.
+     * @param orgName The name of the Organization from whom the Organizer wants to delete the membership.
+     * @return The updated OrganizerDTO
+     * @throws RuntimeException If the organizer is not found or if the Organization is not found.
+     */
+
+    @Transactional
+    public OrganizerDTO deleteOrganizationMembership(String username, String orgName){
+        Organizer organizer = organizerRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
+
+        Organization organization = organizationRepository.findByName(orgName)
+                .orElseThrow(() -> new RuntimeException("Organization Not Found!"));
+
+        if (organizer.getOrganizations() != null) {
+            boolean removed = organizer.getOrganizations().removeIf(
+                    org -> org.getName().equals(orgName)
+            );
+            if (removed) {
+                organizerRepository.save(organizer);
+            }
+        }
+
+        if (organization.getMembers() != null) {
+            boolean removed = organization.getMembers().removeIf(
+                    member -> member.getId().equals(organizer.getId())
+            );
+            if (removed) {
+                organizationRepository.save(organization);
+            }
+        }
+
+        return Mapper.mapOrganizerToDto(organizer);
+    }
+
 }
+

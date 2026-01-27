@@ -13,9 +13,15 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor
 public class OrganizationForLinking {
 
+    /**
+     * Unique identifier of the organization.
+     */
     @Field("id")
     private String id;
 
+    /**
+     * Name of the organization.
+     */
     @Field("name")
     private String name;
 }

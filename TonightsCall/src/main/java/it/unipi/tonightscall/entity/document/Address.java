@@ -3,6 +3,8 @@ package it.unipi.tonightscall.entity.document;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
@@ -33,5 +35,6 @@ public class Address {
      * Mapped to the "loc" field in MongoDB.
      */
     @Field("loc")
+    @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
     private Location location;
 }

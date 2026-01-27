@@ -15,10 +15,16 @@
     @Schema(description = "Summary of an event linked to an organization")
     public class EventOrganizationDTO {
 
+        /**
+         * Unique identifier of the organization.
+         */
         @JsonProperty("id")
-        @Schema(description = "Summary of an event linked to an organization")
+        @Schema(description = "Unique identifier an event linked to an organization")
         private String id;
 
+        /**
+         * Name of the event.
+         */
         @JsonProperty
         @Schema(description = "Name of the event", example = "New Year's Eve Party")
         private String name;

@@ -15,10 +15,16 @@ import lombok.NoArgsConstructor;
 @Schema(description = "Reference to an Organization")
 public class OrganizationForLinkingDTO {
 
+    /**
+     * Unique identifier of the organization.
+     */
     @JsonProperty("id")
     @Schema(description = "Unique identifier of the organization", example = "65a12b3c4d5e6f7g8h9i0j1k")
     private String id;
 
+    /**
+     * Name of the organization.
+     */
     @JsonProperty("name")
     @Schema(description = "Name of the organization", example = "Music Festivals Inc.")
     private String name;
