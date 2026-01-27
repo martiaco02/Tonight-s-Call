@@ -23,7 +23,6 @@ import org.springframework.data.geo.Point;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/event")

@@ -112,7 +112,7 @@ public class EventService {
      */
     public Page<@NonNull EventDTO> getEventsByTopicAndDate(List<String> categories, LocalDate date, Pageable pageable) {
 
-        Page<@NonNull Event> events = this.eventRepository.findByCategoriesIn(categories, pageable);
+        Page<@NonNull Event> events = this.eventRepository.findByCategoriesInAndStartingDateGreaterThanEqual(categories, date, pageable);
         if (events.isEmpty())
             return null;
 
