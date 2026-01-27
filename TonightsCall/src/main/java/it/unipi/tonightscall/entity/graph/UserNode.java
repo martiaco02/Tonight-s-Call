@@ -53,12 +53,15 @@ public class UserNode {
     @EqualsAndHashCode.Exclude
     private Set<TopicNode> interests = new HashSet<>();
 
-
     @Relationship(type = ":FRIENDSHIP", direction = Relationship.Direction.OUTGOING)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Set<UserNode> friends = new HashSet<>();
 
+    @Relationship(type = ":FRIENDSHIP", direction = Relationship.Direction.INCOMING)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<UserNode> friendsIn = new HashSet<>();
 
     @Relationship(type = ":ATTENDS", direction = Relationship.Direction.OUTGOING)
     @ToString.Exclude

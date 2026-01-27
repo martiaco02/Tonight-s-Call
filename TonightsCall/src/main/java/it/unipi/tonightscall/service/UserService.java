@@ -39,6 +39,10 @@ public class UserService {
         User friend =  userRepository.findByUsername(usernameNewFriend)
                 .orElseThrow(() -> new RuntimeException("Friend User not found!"));
 
+        if (me.getFriends().contains(usernameNewFriend)) {
+            throw new RuntimeException("User is already friend!");
+        }
+
         me.getFriends().add(usernameNewFriend);
         friend.getFriends().add(myName);
 
@@ -52,7 +56,6 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Friend Node not found!"));
 
         myNode.getFriends().add(friendNode);
-        friendNode.getFriends().add(myNode);
 
         userGraphRepository.save(myNode);
         userGraphRepository.save(friendNode);
@@ -99,15 +102,20 @@ public class UserService {
         Event event = eventRepository.findById(eventID)
                 .orElseThrow(() -> new RuntimeException("Event not found!"));
 
+        for (ReviewEvent r : me.getReviewedEvents()) {
+            if (r.getEventName().equals(event.getEventName())) {
+                throw new RuntimeException("The user already give a review to this event!");
+            }
+        }
+
         me.getReviewedEvents().add(new ReviewEvent(event.getEventName(), score));
         event.getReviews().add(new Review(score, me.getUsername(), text));
-        event.setTotalReview(event.getTotalReview() + 1);
 
-        int total = 0;
-        for (Review review : event.getReviews())
-            total += review.getScore();
+        double oldScore = event.getTotalReview();
+        int oldTotal = event.getTotalReview();
+        event.setEventScore((oldScore*oldTotal + score)/(oldTotal + 1));
 
-        event.setEventScore((double) total /event.getTotalReview());
+        event.setTotalReview(oldTotal + 1);
 
         userRepository.save(me);
         eventRepository.save(event);
@@ -117,8 +125,6 @@ public class UserService {
 
         EventNode eventNode = eventGraphRepository.findById(eventID)
                 .orElseThrow(() -> new RuntimeException("Event Node not found!"));
-
-        System.out.println("--------\nMyNode: " +myNode);
 
         ReviewRelationship rr = new ReviewRelationship();
         rr.setEvent(eventNode);

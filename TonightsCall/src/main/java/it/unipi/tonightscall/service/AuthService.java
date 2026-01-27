@@ -105,7 +105,6 @@ public class AuthService {
         UserNode userNode = Mapper.mapUserToNode(userDto);
         userNode.setId(saved.getId());
 
-        System.out.println(userDto.getInterests().get(0));
         if (userDto.getInterests() != null && !userDto.getInterests().isEmpty()) {
 
             for (String interess : userDto.getInterests()) {
