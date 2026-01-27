@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service class handling complex business logic for Controllers.
@@ -58,6 +59,10 @@ public class OrganizerService {
         this.topicGraphRepository = topicGraphRepository;
         this.passwordEncoder = passwordEncoder;
     }
+
+    public List<Organizer> getAllOrganizers() { return this.organizerRepository.findAll(); }
+
+    public Optional<Organizer> getOrganizerById(String id) { return this.organizerRepository.findById(id); }
 
     /**
      * Registers a new Organization linked to an existing Organizer.

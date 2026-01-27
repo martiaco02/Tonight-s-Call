@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import it.unipi.tonightscall.DTO.*;
 import it.unipi.tonightscall.entity.document.User;
 import it.unipi.tonightscall.repository.document.UserRepository;
@@ -15,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * REST Controller handling User operations.
@@ -40,7 +41,6 @@ public class UserController {
      * @param authentication Security context of the user performing the action.
      * @return The updated UserDTO if successful, or an error message if the request is invalid.
      */
-
     @Operation(
             summary = "Registers a new friendship",
             description = "Registers a new friendship between two users."
@@ -62,7 +62,6 @@ public class UserController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @PostMapping("/RegisterFriend")
     public ResponseEntity<?> registerFriend(@RequestBody Map<String, String> payload, Authentication authentication) {
         try {
@@ -73,6 +72,13 @@ public class UserController {
         }
     }
 
+    @GetMapping
+    public List<User> getAllUsers() { return this.userService.getAllUsers(); }
+
+    @GetMapping("/{id}")
+    public Optional<User> getUserById(@PathVariable String id) { return this.userService.getUserById(id); }
+
+
     /**
      * Registers a new attendance in the system.
      *
@@ -80,7 +86,6 @@ public class UserController {
      * @param authentication Security context of the user performing the action.
      * @return The updated EventDTO if successful, or an error message if the request is invalid.
      */
-
     @Operation(
             summary = "Registers a User attendance to an Event",
             description = "Adds a user new attendance to an Event attendees' list."
@@ -102,7 +107,6 @@ public class UserController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @PostMapping("/attending")
     public ResponseEntity<?> attending(@RequestBody Map<String, String> payload, Authentication authentication) {
         try{
@@ -120,7 +124,6 @@ public class UserController {
      * @param authentication Security context of the user performing the action.
      * @return The updated EventDTO if successful, or an error message if the request is invalid.
      */
-
     @Operation(
             summary = "Creates a new review",
             description = "Creates a new user's review of an event"
@@ -142,7 +145,6 @@ public class UserController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @PostMapping("/review")
     public ResponseEntity<?> review(@RequestBody ReviewParameterDTO parameters, Authentication authentication) {
         try {
@@ -160,7 +162,6 @@ public class UserController {
      * @param authentication Security context of the user performing the action.
      * @return The updated UserDTO if successful, or an error message if the request is invalid.
      */
-
     @Operation(
             summary = "Updates a user data",
             description = "Updates information about an existing User"
@@ -182,11 +183,11 @@ public class UserController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @PutMapping
     public ResponseEntity<?> updateUser(@RequestBody UserDTO user, Authentication authentication) {
         try {
 
+            //TODO: Capire questa funzione? user.getID? E L'autentificazione?
             UserDTO updatedUser = userService.updateUser(user.getId(), user);
             return ResponseEntity.ok(updatedUser);
 
@@ -202,7 +203,6 @@ public class UserController {
      * @param authentication Security context of the user performing the action.
      * @return The updated ReviewParameterDTO if successful, or an error message if the request is invalid.
      */
-
     @Operation(
             summary = "Updates a Review",
             description = "Updates data of an already existing event's review."
@@ -224,7 +224,6 @@ public class UserController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @PutMapping("review")
     public ResponseEntity<?> updateReview(@RequestBody ReviewParameterDTO parameters,
                                           Authentication authentication) {
@@ -245,7 +244,6 @@ public class UserController {
      * @param authentication Security context of the user performing the action.
      * @return The updated UserDTO if successful, or an error message if the request is invalid.
      */
-
     @Operation(
             summary = "Removes a review",
             description = "Removes a user review from the event's reviews."
@@ -267,7 +265,6 @@ public class UserController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @DeleteMapping("review/{eventID}")
     public ResponseEntity<?> deleteReview(@PathVariable String eventID, Authentication authentication) {
         try{
@@ -286,7 +283,6 @@ public class UserController {
      * @param authentication Security context of the user performing the action.
      * @return The updated UserDTO if successful, or an error message if the request is invalid.
      */
-
     @Operation(
             summary = "Removes a user attendance to an event",
             description = "Removes the previously stated attendance of a user to a specific event."
@@ -308,7 +304,6 @@ public class UserController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @DeleteMapping("attending/{eventID}")
     public ResponseEntity<?> deleteAttendance(@PathVariable String eventID, Authentication authentication) {
         try{
@@ -327,7 +322,6 @@ public class UserController {
      * @param authentication Security context of the user performing the action.
      * @return The updated UserDTO if successful, or an error message if the request is invalid.
      */
-
     @Operation(
             summary = "Removes a friendship",
             description = "Removes a friendship between two users."
@@ -349,7 +343,6 @@ public class UserController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @DeleteMapping("/friendship/{friendUsername}")
     public ResponseEntity<?> deleteFriendship(@PathVariable String friendUsername, Authentication authentication) {
         try{

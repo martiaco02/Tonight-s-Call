@@ -18,18 +18,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Service class handling complex business logic for Controllers.
- * <p>
- * Unlike AuthService which handles authentication, this service manages
- * operations requiring interaction between different entities (e.g., a User creating an Attendency to an Event).
- * </p>
+ *
  */
-
 @Service
 public class UserService {
 
@@ -68,7 +62,6 @@ public class UserService {
      * @return The new UserDTO.
      * @throws RuntimeException If one of the two users is not found.
      */
-
     public UserDTO addFriendship(String usernameNewFriend, String myName) {
 
         User me = userRepository.findByUsername(myName)
@@ -98,6 +91,11 @@ public class UserService {
         return Mapper.mapUserToDto(me);
     }
 
+    public List<User> getAllUsers() { return userRepository.findAll(); }
+
+    public Optional<User> getUserById(String id) { return userRepository.findById(id); }
+
+
     /**
      * Adds a User new Attendance to an Event.
      * <p>
@@ -118,8 +116,6 @@ public class UserService {
      * @return The new EventDTO.
      * @throws RuntimeException If the User or the Event are not found (both in MongoDB or Neo4j).
      */
-
-
     public EventDTO addAttendance(String eventID, String ticket_type, String name) {
 
         Event event = eventRepository.findById(eventID)
@@ -172,7 +168,6 @@ public class UserService {
      * @return The new EventDTO.
      * @throws RuntimeException If the User or the Event are not found (both in MongoDB or Neo4j).
      */
-
     public EventDTO addReview(String eventID, String text, int score, String name) {
 
         User me = userRepository.findByUsername(name)
@@ -233,7 +228,6 @@ public class UserService {
      * @return The updated UserDTO.
      * @throws RuntimeException If the User is not found or if the user tries to update username, date of birth, friendships or reviewed events.
      */
-
     @Transactional
     public UserDTO updateUser(String userID, UserDTO newUserDTO){
         User oldUser =  userRepository.findById(userID)
@@ -349,7 +343,6 @@ public class UserService {
      * @return The updated ReviewDTO.
      * @throws RuntimeException If the User is not found, if the Event is not found or if the user didn't actually review the event.
      */
-
     @Transactional
     public ReviewParameterDTO updateReview(String EventID, ReviewParameterDTO newReviewDTO, String username){
         User user = userRepository.findByUsername(username)
@@ -456,7 +449,6 @@ public class UserService {
      * @return The updated UserDTO
      * @throws RuntimeException If the User is not found or if the event is not found.
      */
-
     @Transactional
     public UserDTO deleteReview(String eventID, String username){
         User user = userRepository.findByUsername(username)
@@ -577,7 +569,6 @@ public class UserService {
      * @return The updated UserDTO
      * @throws RuntimeException If one of the two Users is not found or if the friendship is not found.
      */
-
     @Transactional
     public UserDTO deleteFriendship(String username, String friendUsername){
         User user = userRepository.findByUsername(username)
@@ -621,7 +612,4 @@ public class UserService {
 
         return Mapper.mapUserToDto(user);
     }
-
-
-
 }

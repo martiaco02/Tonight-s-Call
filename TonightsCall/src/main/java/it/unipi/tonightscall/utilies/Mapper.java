@@ -377,6 +377,187 @@ public class Mapper {
     }
 
     /**
+     * Converts an Event Entity (Database object) into an EventDTO (API object).
+     * <p>
+     * Populates the DTO with event details.
+     * </p>
+     *
+     * @param entity The Event entity retrieved from MongoDB.
+     * @return An EventDTO populated with data.
+     */
+    public static EventDTO mapEventToDto(Event entity) {
+
+        if (entity == null) {
+            return null;
+        }
+
+        EventDTO dto = new EventDTO();
+        dto.setId(entity.getId());
+        dto.setEventName(entity.getEventName());
+        dto.setPosition(mapAddressToDto(entity.getPosition()));
+        dto.setTicketPrice(entity.getTicketPrice());
+        dto.setStartingDate(entity.getStartingDate());
+        dto.setEndingDate(entity.getEndingDate());
+        dto.setCategories(entity.getCategories());
+        dto.setDescription(entity.getDescription());
+        dto.setUrlImg(entity.getUrlImg());
+        dto.setStartingTimes(entity.getStartingTimes());
+        dto.setTotalReview(entity.getTotalReview());
+        dto.setEventScore(entity.getEventScore());
+        dto.setStatistic(mapStatisticsToDto(entity.getStatistics()));
+
+        //  Review array
+        List<Review> reviews = entity.getReviews();
+        if (reviews != null) {
+            List<ReviewDTO> reviewsDTO = new ArrayList<>();
+            for (Review re : reviews) {
+                ReviewDTO revDTO = new ReviewDTO(
+                        re.getScore(),
+                        re.getUsername(),
+                        re.getText()
+                );
+                reviewsDTO.add(revDTO);
+            }
+            dto.setReviews(reviewsDTO);
+        } else  {
+            dto.setReviews(new ArrayList<>());
+        }
+
+        //  Attendees array
+        List<Attendent> attendents = entity.getAttendees();
+        if (attendents != null) {
+            List<AttendentDTO> attendentsDTO = new ArrayList<>();
+            for (Attendent at : attendents) {
+                AttendentDTO attDTO = new AttendentDTO(
+                        at.getId(),
+                        at.getTicketType(),
+                        at.getEmail(),
+                        at.getUsername(),
+                        at.getHomeTown(),
+                        at.getDateOfBirth()
+                );
+                attendentsDTO.add(attDTO);
+            }
+            dto.setAttendees(attendentsDTO);
+        } else  {
+            dto.setAttendees(new ArrayList<>());
+        }
+
+        return dto;
+    }
+
+    /**
+     * Converts an LocationDTO (API object) into a Location Entity (Database object).
+     * <p>
+     * Maps every field
+     * </p>
+     *
+     * @param locationDTO The LocationDTO received from the client.
+     * @return A Location entity ready for persistance
+     */
+    public static Location mapLocationToEntity(LocationDTO locationDTO) {
+        if (locationDTO == null) {
+            return null;
+        }
+
+        Location entity = new Location();
+        entity.setType(locationDTO.getType());
+        entity.setCoordinates(locationDTO.getCoordinates());
+        return entity;
+    }
+
+    /**
+     * Converts a Location Entity (Database object) into a LocationDTO (API object).
+     * <p>
+     * Populates the DTO with location details.
+     * </p>
+     *
+     * @param entity The Location entity retrieved from MongoDB.
+     * @return A LocationDTO populated with data.
+     */
+    public static LocationDTO mapLocationToDto(Location entity) {
+
+        if (entity == null) {
+            return null;
+        }
+
+        LocationDTO dto = new LocationDTO();
+        dto.setType(entity.getType());
+        dto.setCoordinates(entity.getCoordinates());
+
+        return dto;
+    }
+
+    /**
+     * Converts an AddressDTO (API object) into an Address Entity (Database object).
+     * <p>
+     * Maps every field
+     * </p>
+     *
+     * @param addressDTO The AddressDTO received from the client.
+     * @return An Address entity ready for persistance
+     */
+    public static Address mapAddressToEntity(AddressDTO addressDTO) {
+        if (addressDTO == null) {
+            return null;
+        }
+
+        Address entity = new Address();
+        entity.setCityName(addressDTO.getCityName());
+        entity.setFullAddress(addressDTO.getFullAddress());
+        entity.setLocation(mapLocationToEntity(addressDTO.getLoc()));
+        return entity;
+    }
+
+    /**
+     * Converts an Address Entity (Database object) into an AddressDTO (API object).
+     * <p>
+     * Populates the DTO with Address details.
+     * </p>
+     *
+     * @param entity The Address entity retrieved from MongoDB.
+     * @return An AddressDTO populated with data.
+     */
+    public static AddressDTO mapAddressToDto(Address entity) {
+
+        if (entity == null) {
+            return null;
+        }
+
+        AddressDTO dto = new AddressDTO();
+        dto.setCityName(entity.getCityName());
+        dto.setFullAddress(entity.getFullAddress());
+        dto.setLoc(mapLocationToDto(entity.getLocation()));
+
+        return dto;
+    }
+
+    /**
+     * Converts a Statistics Entity (Database object) into a StatisticsDTO (API object).
+     * <p>
+     * Populates the DTO with Statistics details.
+     * </p>
+     *
+     * @param entity The Statistics entity retrieved from MongoDB.
+     * @return A StatisticsDTO populated with data.
+     */
+    public static StatisticsDTO mapStatisticsToDto(Statistics entity) {
+
+        if (entity == null) {
+            return null;
+        }
+
+        StatisticsDTO dto = new StatisticsDTO();
+        dto.setDateUpdate(entity.getDateUpdate());
+        dto.setAverageAge(entity.getAverageAge());
+        dto.setPredictedIncome(entity.getPredictedIncome());
+        dto.setOriginAttenders(entity.getOriginAttenders());
+        dto.setTotalAttenders(entity.getTotalAttenders());
+
+        return dto;
+    }
+
+    /**
      * Converts a UserDTO into a UserNode for the Graph Database (Neo4j).
      * <p>
      * Extracts minimal info required for the graph: ID, Username, and Coordinates.

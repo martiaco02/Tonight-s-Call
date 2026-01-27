@@ -9,8 +9,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import it.unipi.tonightscall.DTO.EventDTO;
 import it.unipi.tonightscall.DTO.OrganizationDTO;
 import it.unipi.tonightscall.DTO.OrganizerDTO;
-import it.unipi.tonightscall.entity.document.Organization;
-import it.unipi.tonightscall.entity.document.OrganizationForLinking;
 import it.unipi.tonightscall.entity.document.Organizer;
 import it.unipi.tonightscall.repository.document.OrganizationRepository;
 import it.unipi.tonightscall.repository.document.OrganizerRepository;
@@ -18,6 +16,9 @@ import it.unipi.tonightscall.service.OrganizerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * REST Controller handling operations specific to Organizers.
@@ -40,6 +41,12 @@ public class OrganizerController {
         this.organizerRepository = organizerRepository;
         this.organizationRepository = organizationRepository;
     }
+
+    @GetMapping
+    public List<Organizer> getAllOrganizers() { return this.controllerService.getAllOrganizers(); }
+
+    @GetMapping("/{id}")
+    public Optional<Organizer> getOrganizerById(@PathVariable String id) { return this.controllerService.getOrganizerById(id); }
 
     /**
      * Registers a new Organization linked to the currently authenticated Organizer.
@@ -107,7 +114,6 @@ public class OrganizerController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @PostMapping("/registerEvent")
     public ResponseEntity<?> registerEvent(@RequestBody EventDTO eventDTO, Authentication authentication) {
         try{
@@ -128,7 +134,6 @@ public class OrganizerController {
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @return The updated OrganizerDTO if successful, or an error message otherwise.
      */
-
     @Operation(
             summary = "Updated an Organizer data",
             description = "Updates information about an existing Organizer."
@@ -168,8 +173,6 @@ public class OrganizerController {
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @return The updated OrganizerDTO if successful, or an error message otherwise.
      */
-
-
     @Operation(
             summary = "Removes a membership from an Organization",
             description = "Removes a an Organizer from the member list of an Organization."
@@ -191,8 +194,6 @@ public class OrganizerController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
-
     @DeleteMapping("organization/{organizationID}")
     public ResponseEntity<?> deleteOrganizationMembership(@PathVariable String organizationName, Authentication authentication) {
         try{

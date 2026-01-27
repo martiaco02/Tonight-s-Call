@@ -1,10 +1,7 @@
 package it.unipi.tonightscall.controller;
 
 import it.unipi.tonightscall.DTO.OrganizationDTO;
-import it.unipi.tonightscall.DTO.OrganizerDTO;
-import it.unipi.tonightscall.entity.document.AbstracOrganizer;
 import it.unipi.tonightscall.entity.document.Organization;
-import it.unipi.tonightscall.entity.document.Organizer;
 import it.unipi.tonightscall.repository.document.OrganizationRepository;
 import it.unipi.tonightscall.repository.document.OrganizerRepository;
 import it.unipi.tonightscall.service.OrganizationService;
@@ -12,7 +9,10 @@ import it.unipi.tonightscall.service.OrganizerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +20,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+
 /**
  * REST Controller handling operations specific to Organization.
  */
@@ -33,7 +35,12 @@ public class OrganizationController {
     private final OrganizationRepository organizationRepository;
     private final OrganizerRepository organizerRepository;
 
-    public OrganizationController(OrganizationService organizationService, OrganizerService organizerService, OrganizationRepository organizationRepository, OrganizerRepository organizerRepository) {
+    public OrganizationController(
+            OrganizationService organizationService,
+            OrganizerService organizerService,
+            OrganizationRepository organizationRepository,
+            OrganizerRepository organizerRepository
+    ) {
         this.organizationService = organizationService;
         this.organizerService = organizerService;
         this.organizationRepository = organizationRepository;
@@ -77,6 +84,15 @@ public class OrganizationController {
         }
     }
 
+    //TODO: response entity
+    @GetMapping
+    public List<Organization> getAllOrganizations() { return this.organizationService.getAllOrganizations(); }
+
+    //TODO: response entity
+    @GetMapping("/{id}")
+    public Optional<Organization> getOrganizationById(@PathVariable String id) { return this.organizationService.getOrganizationById(id); }
+
+
     /**
      * Accepts a join Request of an Organizer.
      *
@@ -84,7 +100,6 @@ public class OrganizationController {
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @return The updated OrganizationDTO, or an error message otherwise.
      */
-
     @Operation(summary = "Accepts a Request", description = "Accepts a pending join request in the organization's list.")
     @ApiResponses(value = {
             @ApiResponse(
@@ -158,7 +173,6 @@ public class OrganizationController {
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @return The updated OrganizationDTO, or an error message otherwise.
      */
-
     @Operation(summary = "Deletes a Request", description = "Removes a pending join request from the organization's list.")
     @ApiResponses(value = {
             @ApiResponse(
