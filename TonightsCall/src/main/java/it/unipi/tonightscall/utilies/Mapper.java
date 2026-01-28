@@ -586,7 +586,7 @@ public class Mapper {
     }
 
     /**
-     * Converts an AbstractOrganizerDTO (Organizer or Organization) into an OrganizerNode for Neo4j.
+     * Converts  an AbstractOrganizerDTO (Organizer or Organization) into an OrganizerNode for Neo4j.
      * <p>
      * Handles the logic to determine the correct "username" or display name to use in the graph
      * based on whether the input is an individual Organizer or an Organization.
