@@ -706,4 +706,27 @@ public class UserService {
 
         return resultSet;
     }
+
+    /**
+     * Friend suggestion process: validates input parameters and
+     * extracts usernames from the retrieved {@link UserNode} entities.
+     *
+     * @param userId The unique identifier of the user seeking suggestions.
+     * @param limit  The maximum number of suggestions to process.
+     * @return A list of usernames (Strings) representing potential friends.
+     * @throws RuntimeException if the limit is less than or equal to zero.
+     */
+    public List<String> makeFriendSuggestion(String userId, int limit) {
+
+        if  (limit <= 0)
+            throw new RuntimeException("Limit must be greater than zero!");
+
+        List<UserNode> newFriends = userGraphRepository.suggestFriends(userId, limit);
+        List<String> friends = new ArrayList<>();
+        for (UserNode friend : newFriends) {
+            friends.add(friend.getUsername());
+        }
+
+        return friends;
+    }
 }

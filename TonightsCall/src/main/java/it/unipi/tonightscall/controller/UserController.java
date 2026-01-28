@@ -417,10 +417,10 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved suggestions"),
             @ApiResponse(responseCode = "404", description = "No events found matching the criteria"),
             @ApiResponse(responseCode = "400", description = "Invalid parameters"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - User must be logged in")
+            @ApiResponse(responseCode = "403", description = "Authentication needed")
     })
-    @GetMapping("/suggest")
-    public ResponseEntity<?> makeSuggestion(
+    @GetMapping("/suggestEvent")
+    public ResponseEntity<?> makeEventSuggestion(
             @RequestParam int distance,
             @RequestParam(required = false) LocalDate startingTime,
             @RequestParam(required = false, defaultValue = "3") int limit,
@@ -434,6 +434,38 @@ public class UserController {
 
           return ResponseEntity.ok(events);
         } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * Suggests potential new friends based on mutual connections and shared interests.
+     *
+     * @param limit          Maximum number of suggested friends to return (default is 3).
+     * @param authentication The security context containing the current user's identity.
+     * @return A list of usernames of suggested friends, or an error message if the request fails.
+     */
+    @Operation(summary = "Suggest potential friends", description = "Provides a list of usernames that the current user might know, based on graph-based social analysis.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved friend suggestions"),
+            @ApiResponse(responseCode = "404", description = "No potential friends found"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters (e.g., limit <= 0)"),
+            @ApiResponse(responseCode = "403", description = "Authentication needed")
+    })
+    @GetMapping("/suggestFriend")
+    public ResponseEntity<?> makeFriendSuggestion(
+            @RequestParam(required = false, defaultValue = "3") int limit,
+            Authentication authentication
+    ) {
+        try {
+
+            List<String> friends = userService.makeFriendSuggestion(authentication.getName(), limit);
+            if (friends.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok(friends);
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
