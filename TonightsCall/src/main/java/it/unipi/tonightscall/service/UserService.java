@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -667,5 +668,42 @@ public class UserService {
         userGraphRepository.deleteFriendship(user.getUsername(), friend.getUsername());
 
         return Mapper.mapUserToDto(user);
+    }
+
+    /**
+     * Processes event suggestions logic. Validates input parameters and maps
+     * graph entities to data transfer objects.
+     *
+     * @param userId       The unique identifier of the user.
+     * @param distance     The search radius in kilometers.
+     * @param startingDate The date from which to start looking for events.
+     * @param limit        The maximum number of events to return.
+     * @return A list of {@link EventDTO} containing event details.
+     * @throws RuntimeException if distance or limit are less than or equal to zero.
+     */
+    public List<EventDTO> makeSuggestion(String userId, int distance, LocalDate startingDate, int limit) {
+
+        if (distance <= 0)
+            throw new RuntimeException("Distance must be greater than zero!");
+
+        if (limit <= 0)
+            throw new RuntimeException("Limit must be greater than zero!");
+
+        if (startingDate == null)
+            startingDate = LocalDate.now();
+
+        List<EventNode> events = eventGraphRepository.suggestEvent(userId, distance, startingDate, limit);
+        List<EventDTO> resultSet =  new ArrayList<>();
+
+        for (EventNode event : events) {
+            EventDTO dto = new EventDTO();
+            dto.setId(event.getId());
+            dto.setEventName(event.getEventName());
+            dto.setStartingDate(event.getStartingDate());
+            dto.setEndingDate(event.getEndingDate());
+            resultSet.add(dto);
+        }
+
+        return resultSet;
     }
 }

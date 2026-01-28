@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -397,6 +398,42 @@ public class UserController {
             UserDTO userDTO = userService.deleteFriendship(authentication.getName(), friendUsername);
             return ResponseEntity.ok(userDTO);
         } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * Provides a list of suggested events based on user preferences, friends' reviews,
+     * and geographical proximity.
+     *
+     * @param distance       Maximum distance in kilometers from the user's home.
+     * @param startingTime   Optional start date filter. Defaults to current date if not provided.
+     * @param limit          Maximum number of suggestions to return (default is 3).
+     * @param authentication The security context of the logged-in user.
+     * @return A list of suggested {@link EventDTO}s or an error message.
+     */
+    @Operation(summary = "Get event suggestions", description = "Returns a list of events filtered by distance, user interests, and social connections.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved suggestions"),
+            @ApiResponse(responseCode = "404", description = "No events found matching the criteria"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - User must be logged in")
+    })
+    @GetMapping("/suggest")
+    public ResponseEntity<?> makeSuggestion(
+            @RequestParam int distance,
+            @RequestParam(required = false) LocalDate startingTime,
+            @RequestParam(required = false, defaultValue = "3") int limit,
+            Authentication authentication
+    ) {
+        try {
+          List<EventDTO> events = userService.makeSuggestion(authentication.getName(), distance, startingTime, limit);
+          if (events.isEmpty()) {
+              return ResponseEntity.notFound().build();
+          }
+
+          return ResponseEntity.ok(events);
+        } catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
