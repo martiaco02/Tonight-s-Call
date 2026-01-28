@@ -109,6 +109,11 @@ public class OrganizerController {
                     responseCode = "404",
                     description = "Organizer not found",
                     content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request or internal error",
+                    content = @Content
             )
     })
     @GetMapping("/{id}")

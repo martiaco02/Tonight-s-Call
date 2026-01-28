@@ -14,6 +14,8 @@ import it.unipi.tonightscall.repository.graph.UserGraphRepository;
 import it.unipi.tonightscall.utilies.Mapper;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +36,8 @@ public class UserService {
     public final EventGraphRepository eventGraphRepository;
     private final PasswordEncoder passwordEncoder;
     private final TopicGraphRepository topicGraphRepository;
+
+    public final int PAGE_SIZE = 10;
 
     public UserService(UserRepository userRepository, EventRepository eventRepository, UserGraphRepository userGraphRepository, EventGraphRepository eventGraphRepository, PasswordEncoder passwordEncoder, TopicGraphRepository topicGraphRepository) {
         this.userRepository = userRepository;
@@ -94,9 +98,32 @@ public class UserService {
         return Mapper.mapUserToDto(me);
     }
 
-    public List<User> getAllUsers() { return userRepository.findAll(); }
+    /**
+     * Returns all the users
+     *
+     * @param pageable for implementing the pagination
+     * @return Page of UserDTO or null
+     */
+    public Page<@NonNull UserDTO> getAllUsers(Pageable pageable) {
 
-    public Optional<User> getUserById(String id) { return userRepository.findById(id); }
+        Page<@NonNull User> users = userRepository.findAll(pageable);
+        if (users.isEmpty()) {
+            return null;
+        }
+
+        return users.map(Mapper::mapUserToDto);
+    }
+
+    /**
+     * Returns the User from the id
+     *
+     * @param id The id of the user
+     * @return The wanted user or null
+     */
+    public UserDTO getUserById(String id) {
+        User user = userRepository.findById(id).orElse(null);
+        return user == null ? null : Mapper.mapUserToDto(user);
+    }
 
 
     /**

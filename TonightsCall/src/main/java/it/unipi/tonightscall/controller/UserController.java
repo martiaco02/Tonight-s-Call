@@ -7,9 +7,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import it.unipi.tonightscall.DTO.*;
+import it.unipi.tonightscall.entity.document.Organizer;
 import it.unipi.tonightscall.entity.document.User;
 import it.unipi.tonightscall.repository.document.UserRepository;
 import it.unipi.tonightscall.service.UserService;
+import jakarta.validation.constraints.Min;
+import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -72,11 +78,88 @@ public class UserController {
         }
     }
 
+    /**
+     * Retrieve a paginated list of all users.
+     *
+     * @param page The number of the page to retrieve (0-based index)
+     * @return A ResponseEntity containing a Page of Organizers or an error status
+     */
+    @Operation(
+            summary = "Retrieve all users",
+            description = "Fetches a paginated list of all registered users in the system."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "List of organizers retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))
+            ),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "No users found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid page number or internal error",
+                    content = @Content
+            )
+    })
     @GetMapping
-    public List<User> getAllUsers() { return this.userService.getAllUsers(); }
+    public ResponseEntity<?> getAllUsers(
+            @RequestParam(defaultValue = "0") @Min(0) int page
+    ) {
+        try {
+            Pageable pageable = PageRequest.of(page, this.userService.PAGE_SIZE);
+            Page<@NonNull UserDTO> user = this.userService.getAllUsers(pageable);
+            if (user == null || user.isEmpty())
+                return ResponseEntity.noContent().build();
 
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * Retrieve a specific user by their ID.
+     *
+     * @param id The unique identifier of the user
+     * @return ResponseEntity containing the user or 404 Not Found
+     */
+    @Operation(
+            summary = "Get user by ID",
+            description = "Returns the details of a specific user looking up by its unique identifier."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "user found",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Organizer.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "user not found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request or internal error",
+                    content = @Content
+            )
+    })
     @GetMapping("/{id}")
-    public Optional<User> getUserById(@PathVariable String id) { return this.userService.getUserById(id); }
+    public ResponseEntity<?> getUserById(@PathVariable String id) {
+        try {
+            UserDTO user = this.userService.getUserById(id);
+            if (user == null)
+                return ResponseEntity.notFound().build();
+
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
 
     /**
