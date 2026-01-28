@@ -120,6 +120,20 @@ public class EventService {
     }
 
     /**
+     * Find all events in a specific city
+     *
+     * @param cityName The name of the specific city in which the events must be searched
+     * @param pageable used to manage pagionation
+     */
+
+    public Page<@NonNull EventDTO> getEventsByCity(String cityName,  Pageable pageable) {
+        Page<@NonNull Event> events = this.eventRepository.findByPosition_CityName(cityName, pageable);
+        if (events.isEmpty())
+            return null;
+        return events.map(Mapper::mapEventToDTO);
+    }
+
+    /**
      * Updates an Event's data
      * <p>
      * This method:

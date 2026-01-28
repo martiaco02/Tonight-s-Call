@@ -216,6 +216,28 @@ public class EventController {
     }
 
     /**
+     * Find events in a specific city
+     *
+     * @param cityName The name of the specific city in which to look for available events
+     * @param page The number of pages to return
+     * @return ResponseEntity containing the page or error
+     */
+
+    @GetMapping("events/city/{cityName}")
+    public ResponseEntity<?> getEventsByCity(@PathVariable String cityName, @RequestParam (defaultValue = "0") @Min(0) int page) {
+        try{
+            Pageable pageable = PageRequest.of(page, this.eventService.PAGE_SIZE);
+            Page<@NonNull EventDTO> eventsPage = this.eventService.getEventsByCity(cityName, pageable);
+            if (eventsPage == null || eventsPage.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(eventsPage);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
      * Find events based on their location
      *
      * @param longitude The longitude of the center of the circle

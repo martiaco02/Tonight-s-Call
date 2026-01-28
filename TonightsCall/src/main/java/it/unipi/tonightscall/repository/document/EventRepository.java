@@ -43,6 +43,13 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
      */
     Page<@NonNull Event> findByStartingDateGreaterThanEqual(LocalDate startingDate, Pageable pageable);
 
+        /**
+         * Find events of a specific city
+         * @param cityName the specified city in which to search for available events
+         * @param pageable used to manage pagination
+         */
+    Page<@NonNull Event> findByPosition_CityName(String cityName, Pageable pageable);
+
     /**
      * Given the coordinates of a point [lon, lat], find every event near that point, given a maximum admissible distance
      *
