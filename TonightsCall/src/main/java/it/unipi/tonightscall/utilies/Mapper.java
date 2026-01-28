@@ -573,6 +573,7 @@ public class Mapper {
         UserNode userNode = new UserNode();
         userNode.setId(userDto.getId());
         userNode.setUsername(userDto.getUsername());
+        userNode.setEmail(userDto.getEmail());
 
         AddressDTO homeTown = userDto.getHomeTown();
         if (homeTown != null && homeTown.getLoc() != null) {

@@ -36,6 +36,11 @@ public class UserNode {
     private String username;
 
     /**
+     * The user's email.
+     */
+    private String email;
+
+    /**
      * The user's current or home coordinates.
      * Format: [Longitude, Latitude].
      */

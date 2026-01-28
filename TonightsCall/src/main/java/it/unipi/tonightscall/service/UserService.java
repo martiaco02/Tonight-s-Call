@@ -327,7 +327,7 @@ public class UserService {
         // updating the inserted data
         if(newUserDTO.getName() != null) {oldUser.setName(newUserDTO.getName());}
         if(newUserDTO.getLastname() != null) {oldUser.setLastname(newUserDTO.getLastname());}
-        if(newUserDTO.getEmail() != null) {oldUser.setEmail(newUserDTO.getEmail());}
+        if(newUserDTO.getEmail() != null) {oldUser.setEmail(newUserDTO.getEmail()); update_graph = true;}
         if(newUserDTO.getPassword() != null) {oldUser.setPassword(passwordEncoder.encode(newUserDTO.getPassword()));}
         if(newUserDTO.getInterests() != null) {
             update_graph = true;
@@ -360,6 +360,7 @@ public class UserService {
         // updating MongoDB document
         userRepository.save(oldUser);
 
+        System.out.println(update_graph);
         // updating graphDB if necessary
         if(update_graph){
             UserNode myNode = userGraphRepository.findById(oldUser.getId())
@@ -367,6 +368,10 @@ public class UserService {
 
             if (oldUser.getAddress() != null && oldUser.getAddress().getLocation() != null) {
                 myNode.setCoordinates(oldUser.getAddress().getLocation().getCoordinates());
+            }
+
+            if (newUserDTO.getEmail() != null) {
+                myNode.setEmail(newUserDTO.getEmail());
             }
 
             // 2. Update Interests (if changed)
@@ -387,6 +392,7 @@ public class UserService {
                 }
             }
 
+            System.out.println(myNode);
             userGraphRepository.save(myNode);
         }
 

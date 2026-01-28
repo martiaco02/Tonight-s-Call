@@ -301,17 +301,17 @@ public class EventController {
      * @param event_id  The ID of the updated event
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @param eventDTO The updated details of the event
-     * @return The updated eventDTO and the list of emails of every user which stated their presence at the event if successful, or an error message otherwise.
+     * @return The list of emails of every user which stated their presence at the event if successful, or an error message otherwise.
      */
     @Operation(
             summary = "Updates an Event's data",
-            description = "Updates information about an existing Event."
+            description = "Updates information about an existing Event and return all the users attending the event"
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "Event updated successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = EventDTO.class))
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -332,11 +332,8 @@ public class EventController {
     @PutMapping("/update-event/{event_id}")
     public ResponseEntity<?> updateEvent(@PathVariable String event_id, @RequestBody EventDTO eventDTO, Authentication authentication) {
         try{
-            EventDTO updatedEvent = eventService.updateEvent(event_id, authentication.getName(), eventDTO);
-            if (updatedEvent == null) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(updatedEvent);
+            List<String> emails = eventService.updateEvent(event_id, authentication.getName(), eventDTO);
+            return ResponseEntity.ok(emails);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (RuntimeException e) {

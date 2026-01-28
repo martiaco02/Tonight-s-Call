@@ -158,7 +158,7 @@ public class EventService {
      * @throws IllegalAccessException If the user hasn't got the authorization for modify this event
      */
     @Transactional
-    public EventDTO updateEvent(String event_id, String id, EventDTO newEventDTO) throws IllegalAccessException {
+    public List<String> updateEvent(String event_id, String id, EventDTO newEventDTO) throws IllegalAccessException {
         AbstracOrganizer organizer = abstractOrganizerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Organizer Not Found!"));
 
@@ -272,7 +272,6 @@ public class EventService {
 
         }
 
-
-        return Mapper.mapEventToDto(oldEvent);
+        return eventGraphRepository.findAllEmailFromAttendingUser(oldEvent.getId());
     }
 }
