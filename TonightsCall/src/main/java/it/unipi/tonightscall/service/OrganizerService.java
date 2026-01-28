@@ -16,13 +16,15 @@ import it.unipi.tonightscall.repository.graph.OrganizerGraphRepository;
 import it.unipi.tonightscall.repository.graph.TopicGraphRepository;
 import it.unipi.tonightscall.utilies.Mapper;
 import it.unipi.tonightscall.utilies.Roles;
+import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service class handling complex business logic for Controllers.
@@ -43,6 +45,8 @@ public class OrganizerService {
     private final TopicGraphRepository topicGraphRepository;
     private final PasswordEncoder passwordEncoder;
 
+    public final int PAGE_SIZE = 10;
+
     public OrganizerService(
             OrganizationRepository organizationRepository,
             OrganizerRepository organizerRepository,
@@ -60,9 +64,31 @@ public class OrganizerService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<Organizer> getAllOrganizers() { return this.organizerRepository.findAll(); }
+    /**
+     * Returns all the organizers
+     *
+     * @param pageable for implementing the pagination
+     * @return Page of OrganizerDTO or null
+     */
+    public Page<@NonNull OrganizerDTO> getAllOrganizers(Pageable pageable) {
+        Page<@NonNull Organizer> organizer = this.organizerRepository.findAll(pageable);
+        if (organizer.isEmpty()) {
+            return null;
+        }
 
-    public Optional<Organizer> getOrganizerById(String id) { return this.organizerRepository.findById(id); }
+        return organizer.map(Mapper::mapOrganizerToDto);
+    }
+
+    /**
+     * Returns the Organizer from the id
+     *
+     * @param id The id of the organizer
+     * @return The wanted organizer or null
+     */
+    public OrganizerDTO getOrganizerById(String id) {
+        Organizer org = this.organizerRepository.findById(id).orElse(null);
+        return org == null ? null : Mapper.mapOrganizerToDto(org);
+    }
 
     /**
      * Registers a new Organization linked to an existing Organizer.
@@ -231,7 +257,6 @@ public class OrganizerService {
      * @return The updated OrganizerDTO.
      * @throws RuntimeException If the organizer is not found or if the user tries to update username or password.
      */
-
     @Transactional
     public OrganizerDTO updateOrganizer(String username, OrganizerDTO newOrganizerDTO){
         Organizer oldOrganizer = organizerRepository.findByUsername(username)
@@ -309,7 +334,6 @@ public class OrganizerService {
      * @return The updated OrganizerDTO
      * @throws RuntimeException If the organizer is not found or if the Organization is not found.
      */
-
     @Transactional
     public OrganizerDTO deleteOrganizationMembership(String username, String orgName){
         Organizer organizer = organizerRepository.findByUsername(username)

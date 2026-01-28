@@ -24,6 +24,9 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * REST Controller handling operations specific to Event.
+ */
 @RestController
 @RequestMapping("/event")
 public class EventController {

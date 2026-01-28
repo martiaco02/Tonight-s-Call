@@ -92,6 +92,7 @@ public class OrganizationController {
     /**
      * Function that returns all the Organizations
      *
+     * @param page the page number that you need
      * @return A responseEntity With the requested Page or an error
      */
     @Operation(

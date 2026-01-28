@@ -13,12 +13,15 @@ import it.unipi.tonightscall.entity.document.Organizer;
 import it.unipi.tonightscall.repository.document.OrganizationRepository;
 import it.unipi.tonightscall.repository.document.OrganizerRepository;
 import it.unipi.tonightscall.service.OrganizerService;
+import jakarta.validation.constraints.Min;
+import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
 
 /**
  * REST Controller handling operations specific to Organizers.
@@ -42,11 +45,86 @@ public class OrganizerController {
         this.organizationRepository = organizationRepository;
     }
 
+    /**
+     * Retrieve a paginated list of all organizers.
+     *
+     * @param page The number of the page to retrieve (0-based index)
+     * @return A ResponseEntity containing a Page of Organizers or an error status
+     */
+    @Operation(
+            summary = "Retrieve all organizers",
+            description = "Fetches a paginated list of all registered organizers in the system."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "List of organizers retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))
+            ),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "No organizers found",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid page number or internal error",
+                    content = @Content
+            )
+    })
     @GetMapping
-    public List<Organizer> getAllOrganizers() { return this.controllerService.getAllOrganizers(); }
+    public ResponseEntity<?> getAllOrganizers(
+            @RequestParam(defaultValue = "0") @Min(0) int page
+    ) {
+        try {
+            Pageable pageable = PageRequest.of(page, this.controllerService.PAGE_SIZE);
+            Page<@NonNull OrganizerDTO> organizersPage = this.controllerService.getAllOrganizers(pageable);
+            if (organizersPage == null || organizersPage.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
 
+            return ResponseEntity.ok(organizersPage);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * Retrieve a specific organizer by their ID.
+     *
+     * @param id The unique identifier of the organizer
+     * @return ResponseEntity containing the Organizer or 404 Not Found
+     */
+    @Operation(
+            summary = "Get organizer by ID",
+            description = "Returns the details of a specific organizer looking up by its unique identifier."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Organizer found",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Organizer.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Organizer not found",
+                    content = @Content
+            )
+    })
     @GetMapping("/{id}")
-    public Optional<Organizer> getOrganizerById(@PathVariable String id) { return this.controllerService.getOrganizerById(id); }
+    public ResponseEntity<?> getOrganizerById(
+            @PathVariable String id
+    ) {
+        try {
+            OrganizerDTO organizer = this.controllerService.getOrganizerById(id);
+            if (organizer == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(organizer);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     /**
      * Registers a new Organization linked to the currently authenticated Organizer.
