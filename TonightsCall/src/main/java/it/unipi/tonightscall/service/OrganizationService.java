@@ -6,6 +6,9 @@ import it.unipi.tonightscall.entity.document.*;
 import it.unipi.tonightscall.repository.document.OrganizationRepository;
 import it.unipi.tonightscall.repository.document.OrganizerRepository;
 import it.unipi.tonightscall.utilies.Mapper;
+import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,14 +29,26 @@ public class OrganizationService {
     private final OrganizationRepository organizationRepository;
     private final OrganizerRepository organizerRepository;
 
+    public final int PAGE_SIZE = 10;
+
     public OrganizationService(OrganizationRepository organizationRepository, OrganizerRepository organizerRepository) {
         this.organizationRepository = organizationRepository;
         this.organizerRepository = organizerRepository;
     }
 
-    public List<Organization> getAllOrganizations() { return this.organizationRepository.findAll(); }
+    public Page<@NonNull OrganizationDTO> getAllOrganizations(Pageable pageable) {
+        Page<@NonNull Organization> organizations =  this.organizationRepository.findAll(pageable);
+        if (organizations.isEmpty()) {
+            return null;
+        }
 
-    public Optional<Organization> getOrganizationById(String id) { return this.organizationRepository.findById(id); }
+        return  organizations.map(Mapper::mapOrganizationToDto);
+    }
+
+    public OrganizationDTO getOrganizationById(String id) {
+        Organization organization = this.organizationRepository.findById(id).orElse(null);
+        return organization == null ? null : Mapper.mapOrganizationToDto(organization);
+    }
 
 
     /**

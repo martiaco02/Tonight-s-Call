@@ -6,13 +6,17 @@ import it.unipi.tonightscall.repository.document.OrganizationRepository;
 import it.unipi.tonightscall.repository.document.OrganizerRepository;
 import it.unipi.tonightscall.service.OrganizationService;
 import it.unipi.tonightscall.service.OrganizerService;
+import jakarta.validation.constraints.Min;
+import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,6 +39,8 @@ public class OrganizationController {
     private final OrganizationRepository organizationRepository;
     private final OrganizerRepository organizerRepository;
 
+
+
     public OrganizationController(
             OrganizationService organizationService,
             OrganizerService organizerService,
@@ -53,9 +59,8 @@ public class OrganizationController {
      *
      * @param organizationId The id of the Organization.
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
-     * @return An "OK" entity, or an error message otherwise.
+     * @return ResponseEntity "OK" entity, or an error message otherwise.
      */
-
     @Operation(summary = "Registers a new Request", description = "Creates a new pending join request in the organization's list.")
     @ApiResponses(value = {
             @ApiResponse(
@@ -84,13 +89,77 @@ public class OrganizationController {
         }
     }
 
-    //TODO: response entity
+    /**
+     * Function that returns all the Organizations
+     *
+     * @return A responseEntity With the requested Page or an error
+     */
+    @Operation(
+            summary = "Retrieve all organizations",
+            description = "Fetches a list of all registered organizations."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "List of organizations retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Organization.class))
+            ),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "No organizations found",
+                    content = @Content
+            )
+    })
     @GetMapping
-    public List<Organization> getAllOrganizations() { return this.organizationService.getAllOrganizations(); }
+    public ResponseEntity<?> getAllOrganizations(
+            @RequestParam(defaultValue = "0") @Min(0) int page
+    ) {
+        try {
+            Pageable pageable = PageRequest.of(page, this.organizationService.PAGE_SIZE);
 
-    //TODO: response entity
+            Page<@NonNull OrganizationDTO> orgPage = this.organizationService.getAllOrganizations(pageable);
+
+            if (orgPage == null || orgPage.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+
+            return ResponseEntity.ok(orgPage);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * Get an organization by ID
+     *
+     * @param id The ID of the organization
+     */
+    @Operation(
+            summary = "Get organization by ID",
+            description = "Returns the details of a specific organization looking up by its unique identifier."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Organization found",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Organization.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Organization not found",
+                    content = @Content
+            )
+    })
     @GetMapping("/{id}")
-    public Optional<Organization> getOrganizationById(@PathVariable String id) { return this.organizationService.getOrganizationById(id); }
+    public ResponseEntity<?> getOrganizationById(@PathVariable String id) {
+        OrganizationDTO organization = this.organizationService.getOrganizationById(id);
+
+        if (organization != null)
+            return ResponseEntity.ok(organization);
+
+        return ResponseEntity.notFound().build();
+    }
 
 
     /**
@@ -118,7 +187,6 @@ public class OrganizationController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @PostMapping("/accept")
     public ResponseEntity<?> accept(@RequestBody Map<String, String> newMemberId, Authentication authentication) {
         try {
@@ -136,7 +204,6 @@ public class OrganizationController {
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @return The updated OrganizationDTO, or an error message otherwise.
      */
-
     @Operation(summary = "Updates an Organization data", description = "Updates information about an existing Organization.")
     @ApiResponses(value = {
             @ApiResponse(
@@ -155,7 +222,6 @@ public class OrganizationController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @PutMapping
     public ResponseEntity<?> updateOrganization(@RequestBody OrganizationDTO organizationDTO, Authentication authentication) {
         try {
@@ -191,7 +257,6 @@ public class OrganizationController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-
     @DeleteMapping("/request/{orgUsername}")
     public ResponseEntity<?> deleteRequest(@PathVariable String orgUsername, Authentication authentication) {
         try{
