@@ -60,16 +60,16 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             final String jwt = authHeader.substring(7);
 
             // 4. Delegate validation to JWTService to extract the username
-            final String username = jwtService.validateTokenAndGetUsername(jwt);
+            final String id = jwtService.validateTokenAndGetId(jwt);
 
              // 5. If email is valid and the user is not yet authenticated in the context
-             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+             if (id != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 String role = jwtService.getRoleFromToken(jwt);
                 List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
 
                  UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                         username,
+                         id,
                          null,
                          authorities
                  );

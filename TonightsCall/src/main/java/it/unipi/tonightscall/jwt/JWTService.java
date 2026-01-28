@@ -54,13 +54,13 @@ public class JWTService {
     /**
      * Generates a signed JWT for a specific user.
      *
-     * @param username The user's username, which acts as the token's subject.
+     * @param id The user's id, which acts as the token's subject.
      * @return A String representation of the signed JWT.
      */
-    public String generateToken(String username, String role) {
+    public String generateToken(String id, String role) {
 
         return JWT.create()
-                .withSubject(username) // // The "subject" of the token is the username
+                .withSubject(id) // // The "subject" of the token is the username
                 .withClaim("role", role)
                 .withIssuedAt(new Date()) // Creation Date
                 .withExpiresAt(new Date(System.currentTimeMillis() + validityTime)) // Expiration Date
@@ -72,10 +72,10 @@ public class JWTService {
      * Validates a given JWT and extracts the user's username (subject).
      *
      * @param token The raw JWT string (without "Bearer " prefix).
-     * @return The username address (subject) contained in the token.
+     * @return The id address (subject) contained in the token.
      * @throws RuntimeException if the token is invalid, expired, or tampered with.
      */
-    public String validateTokenAndGetUsername(String token) {
+    public String validateTokenAndGetId(String token) {
         DecodedJWT decodedJWT = verify(token);
         return decodedJWT.getSubject();
     }

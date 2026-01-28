@@ -6,14 +6,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import it.unipi.tonightscall.DTO.EventDTO;
+import it.unipi.tonightscall.DTO.UserDTO;
 import it.unipi.tonightscall.entity.document.Event;
 import it.unipi.tonightscall.service.EventService;
+import it.unipi.tonightscall.service.UserService;
 import jakarta.validation.constraints.Min;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Metrics;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -32,9 +35,11 @@ import java.util.List;
 public class EventController {
 
     private final EventService eventService;
+    private final UserService userService;
 
-    public EventController(EventService eventService) {
+    public EventController(EventService eventService, UserService userService) {
         this.eventService = eventService;
+        this.userService = userService;
     }
 
     /**
@@ -64,7 +69,7 @@ public class EventController {
                     content = @Content
             )
     })
-    @GetMapping("/events")
+    @GetMapping
     public ResponseEntity<?> getAllEvents(@RequestParam(defaultValue = "0") @Min(0) int page) {
         try {
             Pageable pageable = PageRequest.of(page, this.eventService.PAGE_SIZE);
@@ -235,13 +240,12 @@ public class EventController {
             @ApiResponse(responseCode = "400", description = "Invalid coordinates", content = @Content)
     })
     @GetMapping("/search/location")
-    public ResponseEntity<?> getEventsByLocation(@RequestParam double longitude,@RequestParam double latitude, Distance distance, @RequestParam(defaultValue = "0") @Min(0) int page) {
-
+    public ResponseEntity<?> getEventsByLocation(@RequestParam double longitude,@RequestParam double latitude, @RequestParam  double distance, @RequestParam(defaultValue = "0") @Min(0) int page) {
         try {
             Point location = new Point(longitude, latitude);
             Pageable pageable = PageRequest.of(page, this.eventService.PAGE_SIZE);
 
-            Page<@NonNull EventDTO> events = this.eventService.getEventsByLocation(location, distance, pageable);
+            Page<@NonNull EventDTO> events = this.eventService.getEventsByLocation(location, new Distance(distance, Metrics.KILOMETERS), pageable);
             if (events == null) {
                 return ResponseEntity.notFound().build();
             } else if (events.isEmpty()) {
@@ -291,6 +295,7 @@ public class EventController {
     }
 
     /**
+     * TODO: return email of who attended
      * Updates the data of an event
      *
      * @param event_id  The ID of the updated event
@@ -325,7 +330,7 @@ public class EventController {
             )
     })
     @PutMapping("/update-event/{event_id}")
-    public ResponseEntity<?> updateEvent(@PathVariable String event_id, Authentication authentication, @RequestBody EventDTO eventDTO) {
+    public ResponseEntity<?> updateEvent(@PathVariable String event_id, @RequestBody EventDTO eventDTO, Authentication authentication) {
         try{
             EventDTO updatedEvent = eventService.updateEvent(event_id, authentication.getName(), eventDTO);
             if (updatedEvent == null) {
@@ -338,6 +343,45 @@ public class EventController {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IllegalAccessException e) {
             return new ResponseEntity<>("403 - Forbidden: You don't have permission", HttpStatus.FORBIDDEN);
+        }
+    }
+
+    /**
+     * Removes an Attendance from the system.
+     *
+     * @param eventID The id of the Event the Attendance is related to.
+     * @param authentication Security context of the user performing the action.
+     * @return The updated UserDTO if successful, or an error message if the request is invalid.
+     */
+    @Operation(
+            summary = "Removes a user attendance to an event",
+            description = "Removes the previously stated attendance of a user to a specific event."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Attendance removed successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input, User or Event are not found",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            )
+    })
+    @DeleteMapping("/attending/{eventID}")
+    public ResponseEntity<?> deleteAttendance(@PathVariable String eventID, Authentication authentication) {
+        try{
+
+            UserDTO userDTO = userService.deleteAttendance(eventID, authentication.getName());
+            return ResponseEntity.ok(userDTO);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

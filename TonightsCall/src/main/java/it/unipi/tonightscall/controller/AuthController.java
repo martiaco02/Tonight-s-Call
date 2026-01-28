@@ -85,7 +85,7 @@ public class AuthController {
             String token = authService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
             return ResponseEntity.ok(new AuthResponseDTO(token));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body("Login fallito: " + e.getMessage());
+            return ResponseEntity.status(401).body("Login Failed: " + e.getMessage());
         }
     }
 

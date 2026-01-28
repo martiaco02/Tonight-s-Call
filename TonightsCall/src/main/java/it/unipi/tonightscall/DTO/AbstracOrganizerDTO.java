@@ -41,7 +41,7 @@ public abstract class AbstracOrganizerDTO {
     @Schema(description = "Unique identifier of the entity", example = "65a12b3c4d5e6f7g8h9i0j1k")
     private String id;
 
-    @JsonProperty("type")
+    @JsonProperty(value = "type", access = JsonProperty.Access.WRITE_ONLY)
     @Schema(
             description = "Discriminator field to identify the type of organizer",
             example = "ORGANIZER",

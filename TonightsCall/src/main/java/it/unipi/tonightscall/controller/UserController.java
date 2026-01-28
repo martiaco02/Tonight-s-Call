@@ -122,9 +122,9 @@ public class UserController {
     }
 
     /**
-     * Retrieve a specific user by their ID.
+     * Retrieve a specific user by the login
      *
-     * @param id The unique identifier of the user
+     * @param authentication Security context of the user performing the action.
      * @return ResponseEntity containing the user or 404 Not Found
      */
     @Operation(
@@ -148,10 +148,10 @@ public class UserController {
                     content = @Content
             )
     })
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable String id) {
+    @GetMapping("/me")
+    public ResponseEntity<?> getUserById(Authentication authentication) {
         try {
-            UserDTO user = this.userService.getUserById(id);
+            UserDTO user = this.userService.getUserById(authentication.getName());
             if (user == null)
                 return ResponseEntity.notFound().build();
 
@@ -266,12 +266,10 @@ public class UserController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-    @PutMapping
+    @PutMapping("/update")
     public ResponseEntity<?> updateUser(@RequestBody UserDTO user, Authentication authentication) {
         try {
-
-            //TODO: Capire questa funzione? user.getID? E L'autentificazione?
-            UserDTO updatedUser = userService.updateUser(user.getId(), user);
+            UserDTO updatedUser = userService.updateUser(authentication.getName(), user);
             return ResponseEntity.ok(updatedUser);
 
         } catch (RuntimeException e) {
@@ -280,9 +278,12 @@ public class UserController {
     }
 
     /**
+     * TODO: RIMUOVERE UPDATE REVIEW
+     *      C'è il tanto piccolo quanto grosso problema che non c'è modo di ritrovare una specifica review SENZA l'id dell'evento.
+     *      L'id dell'evento non lo abbiamo quindi o modifichiamo tutto quello fatto fino ad ora o togliamo questo
      * Updates a Review data in the system.
      *
-     * @param parameters The new ReviewParameterDTO containing the updated review data.
+     * @param parameters The new ReviewEventDTO containing the updated review data.
      * @param authentication Security context of the user performing the action.
      * @return The updated ReviewParameterDTO if successful, or an error message if the request is invalid.
      */
@@ -307,7 +308,7 @@ public class UserController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-    @PutMapping("review")
+    @PutMapping("/review")
     public ResponseEntity<?> updateReview(@RequestBody ReviewParameterDTO parameters,
                                           Authentication authentication) {
         try {
@@ -321,6 +322,9 @@ public class UserController {
 
 
     /**
+     * TODO: RIMUOVERE DELETE REVIEW
+     *      C'è il tanto piccolo quanto grosso problema che non c'è modo di ritrovare una specifica review SENZA l'id dell'evento.
+     *      L'id dell'evento non lo abbiamo quindi o modifichiamo tutto quello fatto fino ad ora o togliamo questo
      * Removes a Review from the system.
      *
      * @param eventID The id of the Event the Review is related to.
@@ -357,45 +361,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
-    }
-
-    /**
-     * Removes an Attendance from the system.
-     *
-     * @param eventID The id of the Event the Attendance is related to.
-     * @param authentication Security context of the user performing the action.
-     * @return The updated UserDTO if successful, or an error message if the request is invalid.
-     */
-    @Operation(
-            summary = "Removes a user attendance to an event",
-            description = "Removes the previously stated attendance of a user to a specific event."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Attendance removed successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid input, User or Event are not found",
-                    content = @Content(mediaType = "text/plain")
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Forbidden (User is not authorized)",
-                    content = @Content(mediaType = "text/plain")
-            )
-    })
-    @DeleteMapping("attending/{eventID}")
-    public ResponseEntity<?> deleteAttendance(@PathVariable String eventID, Authentication authentication) {
-        try{
-
-            UserDTO userDTO = userService.deleteAttendance(eventID, authentication.getName());
-            return ResponseEntity.ok(userDTO);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     /**

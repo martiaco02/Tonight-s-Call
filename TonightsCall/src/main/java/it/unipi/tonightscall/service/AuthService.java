@@ -138,7 +138,7 @@ public class AuthService {
             throw new RuntimeException("Wrong password!");
         }
 
-        return jwtService.generateToken(user.getUsername(), Roles.USER_ROLE);
+        return jwtService.generateToken(user.getId(), Roles.USER_ROLE);
     }
 
     /**
@@ -163,7 +163,6 @@ public class AuthService {
         OrganizerNode organizerNode = Mapper.mapOrganizerToNode(entity);
         OrganizerNode savedNode = organizerGraphRepository.save(organizerNode);
 
-        saved.setPassword(null);
         return Mapper.mapOrganizerToDto(saved);
     }
 
@@ -185,7 +184,7 @@ public class AuthService {
             throw new RuntimeException("Wrong password!");
         }
 
-        return jwtService.generateToken(organizer1.getUsername(), Roles.ORGANIZER_ROLE);
+        return jwtService.generateToken(organizer1.getId(), Roles.ORGANIZER_ROLE);
     }
 
     /**
@@ -209,7 +208,7 @@ public class AuthService {
         List<Members> members = organization1.getMembers();
         for (Members member : members) {
             if (passwordEncoder.matches(password, member.getPassword())) {
-                return jwtService.generateToken(organization1.getName(), Roles.ORGANIZATION_ROLE);
+                return jwtService.generateToken(organization1.getId(), Roles.ORGANIZATION_ROLE);
             }
         }
         throw new RuntimeException("Wrong password!");

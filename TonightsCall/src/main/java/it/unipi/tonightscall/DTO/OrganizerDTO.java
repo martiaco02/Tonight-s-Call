@@ -48,7 +48,7 @@ public class OrganizerDTO extends AbstracOrganizerDTO {
     /**
      * Hashed password for authentication.
      */
-    @JsonProperty("password")
+    @JsonProperty(value="password", access = JsonProperty.Access.WRITE_ONLY)
     @Schema(
             description = "Password for authentication. Write-only for security.",
             accessMode = Schema.AccessMode.WRITE_ONLY,

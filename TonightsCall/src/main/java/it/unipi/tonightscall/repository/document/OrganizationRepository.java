@@ -2,6 +2,8 @@
 
     import it.unipi.tonightscall.entity.document.Organization;
     import lombok.NonNull;
+    import org.springframework.data.domain.Page;
+    import org.springframework.data.domain.Pageable;
     import org.springframework.data.mongodb.repository.MongoRepository;
 
     import java.util.Optional;
@@ -38,4 +40,13 @@
          * @return {@code true} if the name is already taken, {@code false} otherwise.
          */
         boolean existsByName(String name);
+
+        /**
+         * Return all the Organization or all the Organizer
+         *
+         * @param type ORGANIZER or ORGANIZATION
+         * @param pageable the page for pagination
+         * @return the page
+         */
+        Page<@NonNull Organization> findByType(String type, Pageable pageable);
     }

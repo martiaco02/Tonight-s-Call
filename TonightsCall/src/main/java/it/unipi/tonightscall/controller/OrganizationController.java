@@ -132,12 +132,13 @@ public class OrganizationController {
     }
 
     /**
-     * Get an organization by ID
+     * Get the organization that logged
      *
-     * @param id The ID of the organization
+     * @param authentication The security context containing the current user's details (injected by Spring Security).
+     * @return ResponseEntity containing the organization or an error
      */
     @Operation(
-            summary = "Get organization by ID",
+            summary = "Get organization info that logged",
             description = "Returns the details of a specific organization looking up by its unique identifier."
     )
     @ApiResponses(value = {
@@ -152,9 +153,9 @@ public class OrganizationController {
                     content = @Content
             )
     })
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getOrganizationById(@PathVariable String id) {
-        OrganizationDTO organization = this.organizationService.getOrganizationById(id);
+    @GetMapping("/me")
+    public ResponseEntity<?> getOrganizationById(Authentication  authentication) {
+        OrganizationDTO organization = this.organizationService.getOrganizationById(authentication.getName());
 
         if (organization != null)
             return ResponseEntity.ok(organization);
@@ -223,7 +224,7 @@ public class OrganizationController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-    @PutMapping
+    @PutMapping("/update")
     public ResponseEntity<?> updateOrganization(@RequestBody OrganizationDTO organizationDTO, Authentication authentication) {
         try {
             OrganizationDTO updatedOrganization = organizationService.updateOrganization(authentication.getName(), organizationDTO);

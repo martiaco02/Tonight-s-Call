@@ -46,7 +46,7 @@ public class Event {
      * Example: {"Standard": 20.0, "VIP": 50.0}
      */
     @Field("ticket_price")
-    private Object ticketPrice;
+    private Map<String, Double> ticketPrice;
 
     /**
      * The date when the event starts.

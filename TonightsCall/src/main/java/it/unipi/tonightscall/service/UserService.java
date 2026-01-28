@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,13 +63,13 @@ public class UserService {
      * </p>
      *
      * @param usernameNewFriend The Username of the user who is being befriended.
-     * @param myName The Username of the User who is making the friendship.
+     * @param myID The id of the User who is making the friendship.
      * @return The new UserDTO.
      * @throws RuntimeException If one of the two users is not found.
      */
-    public UserDTO addFriendship(String usernameNewFriend, String myName) {
+    public UserDTO addFriendship(String usernameNewFriend, String myID) {
 
-        User me = userRepository.findByUsername(myName)
+        User me = userRepository.findById(myID)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
         User friend =  userRepository.findByUsername(usernameNewFriend)
@@ -79,7 +80,7 @@ public class UserService {
         }
 
         me.getFriends().add(usernameNewFriend);
-        friend.getFriends().add(myName);
+        friend.getFriends().add(me.getUsername());
 
         userRepository.save(me);
         userRepository.save(friend);
@@ -142,18 +143,51 @@ public class UserService {
      *
      * @param eventID The id of the event the Users wants to attend.
      * @param ticket_type The ticket type the User selected.
-     * @param name The Username of the User.
+     * @param id The id of the User.
      * @return The new EventDTO.
      * @throws RuntimeException If the User or the Event are not found (both in MongoDB or Neo4j).
      */
-    public EventDTO addAttendance(String eventID, String ticket_type, String name) {
+    public EventDTO addAttendance(String eventID, String ticket_type, String id) {
 
         Event event = eventRepository.findById(eventID)
                 .orElseThrow(() -> new RuntimeException("Event not found!"));
 
-        User me = userRepository.findByUsername(name)
+        User me = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
+
+        boolean flag = false;
+        if (
+                (event.getTicketPrice() == null || event.getTicketPrice().isEmpty())
+                && (ticket_type == null || ticket_type.isEmpty())
+        ) {
+            flag = true;
+        } else {
+            if (event.getTicketPrice() != null) {
+                for (String key : event.getTicketPrice().keySet()) {
+                    if (key.equals(ticket_type)) {
+                        flag = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!flag) {
+            throw new RuntimeException("Ticket type Invalid!");
+        }
+
+        if (event.getAttendees() != null && !event.getAttendees().isEmpty()) {
+            for (Attendent attendent : event.getAttendees()) {
+                if (attendent.getUsername().equals(me.getUsername())) {
+                    throw new RuntimeException("Username already attending the event!");
+                }
+            }
+        }
+
+        if (event.getAttendees() == null) {
+            event.setAttendees(new ArrayList<>());
+        }
         event.getAttendees().add(new Attendent(
                 me.getId(),
                 ticket_type,
@@ -194,13 +228,13 @@ public class UserService {
      * @param eventID The id of the reviewed Event.
      * @param text The text of the Review.
      * @param score The score of the Review.
-     * @param name The Username of the User who left a Review.
+     * @param id The id of the User who left a Review.
      * @return The new EventDTO.
      * @throws RuntimeException If the User or the Event are not found (both in MongoDB or Neo4j).
      */
-    public EventDTO addReview(String eventID, String text, int score, String name) {
+    public EventDTO addReview(String eventID, String text, int score, String id) {
 
-        User me = userRepository.findByUsername(name)
+        User me = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
         Event event = eventRepository.findById(eventID)
@@ -266,7 +300,7 @@ public class UserService {
         User oldUser =  userRepository.findById(userID)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        if(!oldUser.getId().equals(newUserDTO.getId())){
+        if(newUserDTO.getId() != null && !oldUser.getId().equals(newUserDTO.getId())){
             throw new RuntimeException("You can only update your own profile!");
         }
         // checking consistency: username can't change
@@ -297,7 +331,12 @@ public class UserService {
         if(newUserDTO.getPassword() != null) {oldUser.setPassword(passwordEncoder.encode(newUserDTO.getPassword()));}
         if(newUserDTO.getInterests() != null) {
             update_graph = true;
-            oldUser.setInterests(newUserDTO.getInterests());
+            //oldUser.setInterests(newUserDTO.getInterests());
+            for (String interest : newUserDTO.getInterests()) {
+                if (!oldUser.getInterests().contains(interest)) {
+                    oldUser.getInterests().add(interest);
+                }
+            }
         }
 
         if(newUserDTO.getHomeTown() != null) {
@@ -342,7 +381,7 @@ public class UserService {
                     // Find the topic node in the DB by its name
                     // (Ensure you have injected 'topicGraphRepository' in your Service!)
                     TopicNode topicNode = topicGraphRepository.findById(topicName)
-                            .orElseThrow(() -> new RuntimeException("Topic Node not found!"));
+                            .orElse(new  TopicNode(topicName.toUpperCase()));
 
                     myNode.getInterests().add(topicNode);
                 }
@@ -372,13 +411,13 @@ public class UserService {
      *
      * @param EventID The ID of the event the review was written for.
      * @param newReviewDTO The ReviewDTO containing the updated data.
-     * @param username The Username of the user who is making the update of their review.
+     * @param id The id of the user who is making the update of their review.
      * @return The updated ReviewDTO.
      * @throws RuntimeException If the User is not found, if the Event is not found or if the user didn't actually review the event.
      */
     @Transactional
-    public ReviewParameterDTO updateReview(String EventID, ReviewParameterDTO newReviewDTO, String username){
-        User user = userRepository.findByUsername(username)
+    public ReviewParameterDTO updateReview(String EventID, ReviewParameterDTO newReviewDTO, String id){
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
         Event event = eventRepository.findById(EventID)
@@ -387,7 +426,7 @@ public class UserService {
         boolean found = false;
         // checks if the user actually reviewed the event
         for(int i=0; i<event.getReviews().size(); i++){
-            if(event.getReviews().get(i).getUsername().equals(username)){
+            if(event.getReviews().get(i).getUsername().equals(user.getUsername())){
                 found = true;
                 break;
             }
@@ -400,7 +439,7 @@ public class UserService {
         ReviewDTO reviewDTO = new ReviewDTO();
         reviewDTO.setScore(newReviewDTO.getScore());
         reviewDTO.setText(newReviewDTO.getText());
-        reviewDTO.setUsername(username);
+        reviewDTO.setUsername(user.getUsername());
 
         // we have to update both the specific user's reviews and the specific event's reviews
 
@@ -478,13 +517,13 @@ public class UserService {
      * </p>
      *
      * @param eventID The ID of the event the Review belongs to.
-     * @param username The Username of the user the Review was written by.
+     * @param id The Username of the user the Review was written by.
      * @return The updated UserDTO
      * @throws RuntimeException If the User is not found or if the event is not found.
      */
     @Transactional
-    public UserDTO deleteReview(String eventID, String username){
-        User user = userRepository.findByUsername(username)
+    public UserDTO deleteReview(String eventID, String id){
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
         Event event = eventRepository.findById(eventID)
@@ -548,19 +587,16 @@ public class UserService {
      * </p>
      *
      * @param eventID The ID of the event the user was going to attend.
-     * @param username The Username of the user whose attendee must be deleted.
+     * @param id The id of the user whose attendee must be deleted.
      * @return The updated UserDTO
      * @throws RuntimeException If the User is not found or if the event is not found.
      */
     @Transactional
-    public UserDTO deleteAttendance(String eventID, String username){
-        User user = userRepository.findByUsername(username)
+    public UserDTO deleteAttendance(String eventID, String id){
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
         Event event = eventRepository.findById(eventID)
                 .orElseThrow(() -> new RuntimeException("Event not found!"));
-        UserNode userNode = userGraphRepository.findById(user.getId())
-                .orElseThrow(() -> new RuntimeException("User not found!"));
-
 
         for(int i=0; i<event.getAttendees().size(); i++){
             if(event.getAttendees().get(i).getUsername().equals(user.getUsername())){
@@ -569,14 +605,7 @@ public class UserService {
             }
         }
 
-        if(userNode.getAttendees() != null){
-            boolean graphChanged = userNode.getAttendees().removeIf(
-                    e -> e.getId().equals(eventID)
-            );
-            if (graphChanged) {
-                userGraphRepository.save(userNode);
-            }
-        }
+        userGraphRepository.deleteAttendecy(id, eventID);
 
         eventRepository.save(event);
         userRepository.save(user);
@@ -597,51 +626,39 @@ public class UserService {
      * </ol>
      * </p>
      *
-     * @param username The Username of the User who wants to unfriend another User.
+     * @param id The id of the User who wants to unfriend another User.
      * @param friendUsername the Username of the User that has to be unfriended.
      * @return The updated UserDTO
      * @throws RuntimeException If one of the two Users is not found or if the friendship is not found.
      */
     @Transactional
-    public UserDTO deleteFriendship(String username, String friendUsername){
-        User user = userRepository.findByUsername(username)
+    public UserDTO deleteFriendship(String id, String friendUsername){
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
         User friend = userRepository.findByUsername(friendUsername)
                 .orElseThrow(() -> new RuntimeException("User friend not found!"));
 
-        if(!user.getFriends().contains(friend) || !friend.getFriends().contains(user)){
+        if (user.getFriends() == null)
+            throw new RuntimeException("User friends not found!");
+
+        if(!user.getFriends().contains(friend.getUsername()) || !friend.getFriends().contains(user.getUsername())){
             throw new RuntimeException("You are not friend with this user!");
         }
         // checking user's friend list to find friendship with friend and remove it
-        if(user.getFriends() != null && user.getFriends().contains(friend.getUsername())){
+        if(user.getFriends().contains(friend.getUsername())){
             user.getFriends().remove(friend.getUsername());
         }
 
         // checking friend's friend list to find friendship with user and remove it
-        if(friend.getFriends() != null &&  friend.getFriends().contains(username)){
+        if(friend.getFriends() != null && friend.getFriends().contains(user.getUsername())){
             friend.getFriends().remove(user.getUsername());
         }
 
         userRepository.save(user);
         userRepository.save(friend);
 
-        UserNode userNode = userGraphRepository.findById(username)
-                .orElseThrow(() -> new RuntimeException("User not found!"));
-
-        UserNode friendNode = userGraphRepository.findById(friend.getId())
-                .orElseThrow(() -> new RuntimeException("User friend not found!"));
-
-
-        if(userNode.getFriends() != null){
-            if(userNode.getFriends().removeIf(f -> f.getUsername().equals(friend.getUsername())))
-                userGraphRepository.save(userNode);
-        }
-
-        if(friendNode.getFriends() != null){
-            if(friendNode.getFriends().removeIf(f -> f.getUsername().equals(user.getUsername())))
-                userGraphRepository.save(friendNode);
-        }
+        userGraphRepository.deleteFriendship(user.getUsername(), friend.getUsername());
 
         return Mapper.mapUserToDto(user);
     }

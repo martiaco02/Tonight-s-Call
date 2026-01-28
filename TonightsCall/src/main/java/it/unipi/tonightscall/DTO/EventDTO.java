@@ -50,7 +50,7 @@ public class EventDTO {
      */
     @JsonProperty("ticket_price")
     @Schema(description = "Map of ticket categories and their prices", example = "{\"Standard\": 20.0, \"VIP\": 50.0}")
-    private Object ticketPrice;
+    private Map<String, Double> ticketPrice;
 
     /**
      * The date when the event starts.
@@ -107,14 +107,14 @@ public class EventDTO {
      */
     @JsonProperty("total_review")
     @Schema(description = "Total number of reviews", example = "150")
-    private int totalReview;
+    private Integer totalReview;
 
     /**
      * Average score of the event (from 1.0 to 5.0).
      */
     @JsonProperty("event_score")
     @Schema(description = "Average rating score of the event", example = "4.5")
-    private double eventScore;
+    private Double eventScore;
 
     /**
      * List of users planning to attend the event.

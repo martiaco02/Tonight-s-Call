@@ -2,6 +2,8 @@ package it.unipi.tonightscall.repository.document;
 
 import it.unipi.tonightscall.entity.document.Organizer;
 import lombok.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
@@ -30,4 +32,12 @@ public interface OrganizerRepository extends MongoRepository<@NonNull Organizer,
      * @return {@code true} if exists, {@code false} otherwise.
      */
     boolean existsByUsername(String username);
+
+    /**
+     * Find all the Organizer or all the Organization
+     * @param type ORGANIZER or ORGANIZATION
+     * @param pageable the page for pagination
+     * @return the page
+     */
+    Page<@NonNull Organizer> findByType(String type, Pageable pageable);
 }

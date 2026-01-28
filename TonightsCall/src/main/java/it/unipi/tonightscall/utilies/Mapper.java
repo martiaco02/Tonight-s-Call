@@ -247,7 +247,6 @@ public class Mapper {
         dto.setLastName(entity.getLastName());
         dto.setUsername(entity.getUsername());
         dto.setDateOfBirth(entity.getDateOfBirth());
-        dto.setPassword(entity.getPassword());
 
         List<OrganizationForLinking> organizationLinkingentity =  entity.getOrganizations();
         if (organizationLinkingentity != null) {
@@ -635,10 +634,10 @@ public class Mapper {
         entity.setUrlImg(eventDTO.getUrlImg());
         entity.setTotalReview(eventDTO.getTotalReview());
         entity.setEventScore(eventDTO.getEventScore());
-        Object ticketPriceDTO = eventDTO.getTicketPrice();
+        Map<String, Double> ticketPriceDTO = eventDTO.getTicketPrice();
 
         if (ticketPriceDTO != null) {
-            entity.setTicketPrice(ticketPriceDTO);
+            entity.setTicketPrice(new HashMap<>(ticketPriceDTO));
         } else {
             entity.setTicketPrice(new HashMap<>());
         }
@@ -777,9 +776,9 @@ public class Mapper {
             eventDTO.setCategories(new ArrayList<>());
         }
 
-        Object ticketPrice = entity.getTicketPrice();
+        Map<String, Double> ticketPrice = entity.getTicketPrice();
         if (ticketPrice != null) {
-            eventDTO.setTicketPrice(ticketPrice);
+            eventDTO.setTicketPrice(new HashMap<>(ticketPrice));
         }  else {
             eventDTO.setTicketPrice(new HashMap<>());
         }

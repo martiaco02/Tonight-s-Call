@@ -92,7 +92,7 @@ public class OrganizerController {
     /**
      * Retrieve a specific organizer by their ID.
      *
-     * @param id The unique identifier of the organizer
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @return ResponseEntity containing the Organizer or 404 Not Found
      */
     @Operation(
@@ -116,12 +116,12 @@ public class OrganizerController {
                     content = @Content
             )
     })
-    @GetMapping("/{id}")
+    @GetMapping("/me")
     public ResponseEntity<?> getOrganizerById(
-            @PathVariable String id
+            Authentication authentication
     ) {
         try {
-            OrganizerDTO organizer = this.controllerService.getOrganizerById(id);
+            OrganizerDTO organizer = this.controllerService.getOrganizerById(authentication.getName());
             if (organizer == null) {
                 return ResponseEntity.notFound().build();
             }
@@ -238,7 +238,7 @@ public class OrganizerController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-    @PutMapping
+    @PutMapping("/update")
     public ResponseEntity<?> updateOrganizer(@RequestBody OrganizerDTO organizerDTO, Authentication authentication) {
         try{
             OrganizerDTO updatedOrganizer = controllerService.updateOrganizer(authentication.getName(), organizerDTO);
@@ -277,7 +277,7 @@ public class OrganizerController {
                     content = @Content(mediaType = "text/plain")
             )
     })
-    @DeleteMapping("organization/{organizationID}")
+    @DeleteMapping("organization/{organizationName}")
     public ResponseEntity<?> deleteOrganizationMembership(@PathVariable String organizationName, Authentication authentication) {
         try{
             OrganizerDTO organizerDTO = controllerService.deleteOrganizationMembership(authentication.getName(), organizationName);
@@ -285,8 +285,6 @@ public class OrganizerController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-
     }
 
 }

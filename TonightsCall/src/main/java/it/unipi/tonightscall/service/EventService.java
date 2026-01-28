@@ -1,9 +1,16 @@
 package it.unipi.tonightscall.service;
 
 import it.unipi.tonightscall.DTO.EventDTO;
+import it.unipi.tonightscall.DTO.UserDTO;
+import it.unipi.tonightscall.entity.document.*;
 import it.unipi.tonightscall.entity.document.Event;
-import it.unipi.tonightscall.entity.document.EventOrganization;
-import it.unipi.tonightscall.entity.document.Organizer;
+import it.unipi.tonightscall.entity.graph.EventNode;
+import it.unipi.tonightscall.entity.graph.TopicNode;
+import it.unipi.tonightscall.entity.graph.UserNode;
+import it.unipi.tonightscall.repository.document.AbstractOrganizerRepository;
+import it.unipi.tonightscall.repository.document.UserRepository;
+import it.unipi.tonightscall.repository.graph.TopicGraphRepository;
+import it.unipi.tonightscall.repository.graph.UserGraphRepository;
 import it.unipi.tonightscall.utilies.Mapper;
 import it.unipi.tonightscall.repository.document.EventRepository;
 import it.unipi.tonightscall.repository.document.OrganizerRepository;
@@ -18,23 +25,32 @@ import org.springframework.data.geo.Point;
 
 import java.awt.*;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class EventService {
 
-    public final EventRepository eventRepository;
-    public final EventGraphRepository eventGraphRepository;
+    private final EventRepository eventRepository;
+    private final EventGraphRepository eventGraphRepository;
+    private final UserRepository userRepository;
+    private final UserGraphRepository userGraphRepository;
+    private final TopicGraphRepository topicGraphRepository;
 
-    public final OrganizerRepository organizerRepository;
+    private final OrganizerRepository organizerRepository;
 
     public final int PAGE_SIZE = 10;
+    private final AbstractOrganizerRepository abstractOrganizerRepository;
 
-    public EventService(EventRepository eventRepository, EventGraphRepository eventGraphRepository, OrganizerRepository organizerRepository) {
+    public EventService(EventRepository eventRepository, EventGraphRepository eventGraphRepository, UserRepository userRepository, UserGraphRepository userGraphRepository, TopicGraphRepository topicGraphRepository, OrganizerRepository organizerRepository, AbstractOrganizerRepository abstractOrganizerRepository) {
         this.eventRepository = eventRepository;
         this.eventGraphRepository = eventGraphRepository;
+        this.userRepository = userRepository;
+        this.userGraphRepository = userGraphRepository;
+        this.topicGraphRepository = topicGraphRepository;
         this.organizerRepository = organizerRepository;
+        this.abstractOrganizerRepository = abstractOrganizerRepository;
     }
 
     /**
@@ -134,7 +150,7 @@ public class EventService {
      * </p>
      *
      * @param event_id The id of the Event that will be updated.
-     * @param username The username of the user who requested the update.
+     * @param id The id of the user who requested the update.
      * @param newEventDTO The EventDTO with the updated data.
      * @return The updated EventDTO.
      * @throws RuntimeException If the event is not found, if the user isn't the organizer of the event or if illegal fields are updated
@@ -142,8 +158,8 @@ public class EventService {
      * @throws IllegalAccessException If the user hasn't got the authorization for modify this event
      */
     @Transactional
-    public EventDTO updateEvent(String event_id, String username, EventDTO newEventDTO) throws IllegalAccessException {
-        Organizer organizer = organizerRepository.findByUsername(username) //TODO: modificare in modo che anche le organizazzioni abbiano accesso
+    public EventDTO updateEvent(String event_id, String id, EventDTO newEventDTO) throws IllegalAccessException {
+        AbstracOrganizer organizer = abstractOrganizerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Organizer Not Found!"));
 
         boolean flag = false;
@@ -185,39 +201,35 @@ public class EventService {
             throw new RuntimeException("Can't change the statistics of the event!");
         }
 
-        // checking if the user is the organizer of the event
-        List<EventOrganization> organizer_events = organizer.getEvents();
-
-        for(EventOrganization e : organizer_events) {
-            if(e.getId().equals(event_id)) { break; }
-            throw new RuntimeException("The user is not the organizer of this event!");
-        }
-
         // updating the new data
+
+        boolean flagModifyGraph = false;
 
         //  Location
         if(newEventDTO.getPosition() != null){
             oldEvent.setPosition(Mapper.mapAddressToEntity(newEventDTO.getPosition()));
-        }
-
-        //  Ticket price
-        if(newEventDTO.getTicketPrice() != null){
-            oldEvent.setTicketPrice(newEventDTO.getTicketPrice());
+            flagModifyGraph = true;
         }
 
         //  Starting date
         if(newEventDTO.getStartingDate() != null){
             oldEvent.setStartingDate(newEventDTO.getStartingDate());
+            flagModifyGraph = true;
         }
 
         //  Ending date
         if(newEventDTO.getEndingDate() != null){
+            if (oldEvent.getStartingDate().isAfter(oldEvent.getEndingDate()))
+                throw new RuntimeException("The new ending date is before the starting date!");
+
             oldEvent.setEndingDate(newEventDTO.getEndingDate());
+            flagModifyGraph = true;
         }
 
         //  Topics
         if(newEventDTO.getCategories() != null){
             oldEvent.setCategories(newEventDTO.getCategories());
+            flagModifyGraph = true;
         }
 
         //  Description
@@ -237,6 +249,29 @@ public class EventService {
 
         // updating document
         eventRepository.save(oldEvent);
+
+        if (flagModifyGraph){
+            EventNode eventNode = eventGraphRepository.findById(oldEvent.getId())
+                    .orElseThrow(() -> new RuntimeException("Event Node Not Found!"));
+
+            eventNode.setStartingDate(oldEvent.getStartingDate());
+            eventNode.setEndingDate(oldEvent.getEndingDate());
+            eventNode.setCoordinates(oldEvent.getPosition().getLocation().getCoordinates());
+
+            eventGraphRepository.deleteAllIsAboutRelationships(oldEvent.getId());
+            eventNode.setCategories(new HashSet<>());
+            for (String category : oldEvent.getCategories()) {
+                TopicNode categoryNode = topicGraphRepository.findById(category)
+                        .orElse(new TopicNode(category));
+
+                eventNode.getCategories().add(categoryNode);
+                topicGraphRepository.save(categoryNode);
+            }
+
+            eventGraphRepository.save(eventNode);
+
+        }
+
 
         return Mapper.mapEventToDto(oldEvent);
     }

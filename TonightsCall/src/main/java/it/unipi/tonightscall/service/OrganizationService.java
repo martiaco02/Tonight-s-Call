@@ -37,7 +37,7 @@ public class OrganizationService {
     }
 
     public Page<@NonNull OrganizationDTO> getAllOrganizations(Pageable pageable) {
-        Page<@NonNull Organization> organizations =  this.organizationRepository.findAll(pageable);
+        Page<@NonNull Organization> organizations =  this.organizationRepository.findByType("ORGANIZATION",pageable);
         if (organizations.isEmpty()) {
             return null;
         }
@@ -65,13 +65,13 @@ public class OrganizationService {
      * </p>
      *
      * @param organizationId The id of the Organization that was asked to be joined.
-     * @param username The Username of the Organizer sending the request to join.
+     * @param id The id of the Organizer sending the request to join.
      * @throws RuntimeException If the Organizer or the Organization are not found.
      */
 
-    public void addJoinRequest(String organizationId, String username) {
+    public void addJoinRequest(String organizationId, String id) {
 
-        Organizer me = organizerRepository.findByUsername(username)
+        Organizer me = organizerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
 
         Organization toJoin = organizationRepository.findById(organizationId)
@@ -115,14 +115,14 @@ public class OrganizationService {
      * </p>
      *
      * @param newMemberId The id of the Organizer who is to be accepted as new member of the Organization.
-     * @param username The Username of the Organization.
+     * @param id The id of the Organization.
      * @return The new OrganizationDTO.
      * @throws RuntimeException If the Organizer or Organization are not found, or if the Organizer's pending request is not found.
      */
 
-    public OrganizationDTO acceptJoinRequest(String newMemberId, String username) {
+    public OrganizationDTO acceptJoinRequest(String newMemberId, String id) {
 
-        Organization me = organizationRepository.findByName(username)
+        Organization me = organizationRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Organization Not Found!"));
 
         Organizer newMember = organizerRepository.findById(newMemberId)
@@ -153,21 +153,15 @@ public class OrganizationService {
      * </ol>
      * </p>
      *
-     * @param organizationName The Name of the Organization to update.
+     * @param organizationId The Id of the Organization to update.
      * @param newOrganizationDTO The OrganizationDTO containing the new data.
      * @return The updated OrganizationDTO.
-     * @throws RuntimeException If the Organization is not found, or if the current user tries to update an Organization they aren't part of.
+     * @throws RuntimeException If the Organization is not found, or organizationIdif the current user tries to update an Organization they aren't part of.
      */
-
     @Transactional
-    public OrganizationDTO updateOrganization(String organizationName, OrganizationDTO newOrganizationDTO){
-        Organization oldOrganization = organizationRepository.findByName(organizationName)
+    public OrganizationDTO updateOrganization(String organizationId, OrganizationDTO newOrganizationDTO){
+        Organization oldOrganization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new RuntimeException("Organization Not Found!"));
-        if(!oldOrganization.getName().equals(newOrganizationDTO.getName())){
-            throw new RuntimeException("You can only update data of an Organization you are part of!");
-        }
-        // organization's name can change because the authentication is based on username
-        // is done on the members of it (so on their usernames)
 
         if(newOrganizationDTO.getName() != null && !oldOrganization.getName().equals(newOrganizationDTO.getName())) {
             throw new RuntimeException("Can't change name of an Organization!");
@@ -195,16 +189,16 @@ public class OrganizationService {
      * </p>
      *
      * @param organizerUsername The Username of the Organizer.
-     * @param organizationName The name of the Organization from whom the request must be deleted.
+     * @param id The name of the Organization from whom the request must be deleted.
      * @return The updated OrganizationDTO.
      * @throws RuntimeException If the organizer is not found or if the Organization is not found.
      */
     @Transactional
-    public OrganizationDTO deleteRequest(String organizerUsername, String organizationName) {
+    public OrganizationDTO deleteRequest(String organizerUsername, String id) {
         Organizer organizer = organizerRepository.findByUsername(organizerUsername)
                 .orElseThrow(() -> new RuntimeException("Organizer not found!"));
 
-        Organization organization =  organizationRepository.findByName(organizationName)
+        Organization organization =  organizationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Organization not found!"));
 
         if(organization.getPendingRequests() != null && !organization.getPendingRequests().isEmpty()){

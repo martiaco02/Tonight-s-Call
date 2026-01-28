@@ -71,7 +71,7 @@ public class OrganizerService {
      * @return Page of OrganizerDTO or null
      */
     public Page<@NonNull OrganizerDTO> getAllOrganizers(Pageable pageable) {
-        Page<@NonNull Organizer> organizer = this.organizerRepository.findAll(pageable);
+        Page<@NonNull Organizer> organizer = this.organizerRepository.findByType("ORGANIZER", pageable);
         if (organizer.isEmpty()) {
             return null;
         }
@@ -104,12 +104,12 @@ public class OrganizerService {
      * </p>
      *
      * @param organizationDTO The details of the organization to create.
-     * @param username        The username of the authenticated Organizer (creator).
+     * @param id The id of the authenticated Organizer (creator).
      * @return The created OrganizationDTO.
      * @throws RuntimeException If the organization name is taken or the organizer is not found.
      */
     @Transactional
-    public OrganizationDTO registerOrganization(OrganizationDTO organizationDTO, String username) {
+    public OrganizationDTO registerOrganization(OrganizationDTO organizationDTO, String id) {
 
         if (organizationDTO.getName() == null)
             throw new RuntimeException("Organization name is required");
@@ -118,7 +118,7 @@ public class OrganizerService {
             throw new RuntimeException("The name " + organizationDTO.getName() + " is already taken.");
         }
 
-        Organizer me = organizerRepository.findByUsername(username)
+        Organizer me = organizerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
 
 
@@ -126,7 +126,7 @@ public class OrganizerService {
         Members members = new Members();
         members.setPassword(me.getPassword());
         members.setId(me.getId());
-        members.setName(username);
+        members.setName(me.getUsername());
 
         List<Members> membersList = new ArrayList<>();
         membersList.add(members);
@@ -158,20 +158,20 @@ public class OrganizerService {
      * </ol>
      * </p>
      * @param eventDTO The Event's details
-     * @param username Username of the organizer
+     * @param id Id of the organizer
      * @return The created EventDTO
      * @throws RuntimeException If the organization name is not found or if the organizationNode is not found or if the data are not consistent
      */
     @Transactional
-    public EventDTO registerEvent(EventDTO eventDTO, String username, String role) {
+    public EventDTO registerEvent(EventDTO eventDTO, String id, String role) {
 
         AbstracOrganizer me;
         if (role.equals(Roles.ORGANIZER_ROLE)) {
 
-            me = organizerRepository.findByUsername(username)
+            me = organizerRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
         } else if (role.equals(Roles.ORGANIZATION_ROLE)) {
-            me = organizationRepository.findByName(username)
+            me = organizationRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
         } else {
             throw new RuntimeException("Invalid role");
@@ -194,10 +194,9 @@ public class OrganizerService {
                 throw new RuntimeException("Ending Date is before Start Date");
             }
         }
-
+        eventDTO.setTotalReview(0);
+        eventDTO.setEventScore(0.0);
         Event event = Mapper.mapEventToEntity(eventDTO);
-        event.setTotalReview(0);
-        event.setEventScore(0);
 
         Event saved  = eventRepository.save(event);
 
@@ -252,14 +251,14 @@ public class OrganizerService {
      * </ol>
      * </p>
      *
-     * @param username The Username of the Organizer to update.
+     * @param id The id of the Organizer to update.
      * @param newOrganizerDTO The OrganizerDTO with the updated data.
      * @return The updated OrganizerDTO.
      * @throws RuntimeException If the organizer is not found or if the user tries to update username or password.
      */
     @Transactional
-    public OrganizerDTO updateOrganizer(String username, OrganizerDTO newOrganizerDTO){
-        Organizer oldOrganizer = organizerRepository.findByUsername(username)
+    public OrganizerDTO updateOrganizer(String id, OrganizerDTO newOrganizerDTO){
+        Organizer oldOrganizer = organizerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
 
         // checking consistency: username can't change
@@ -329,14 +328,14 @@ public class OrganizerService {
      * </ol>
      * </p>
      *
-     * @param username The Username of the Organizer whose membership must be deleted.
+     * @param id The id of the Organizer whose membership must be deleted.
      * @param orgName The name of the Organization from whom the Organizer wants to delete the membership.
      * @return The updated OrganizerDTO
      * @throws RuntimeException If the organizer is not found or if the Organization is not found.
      */
     @Transactional
-    public OrganizerDTO deleteOrganizationMembership(String username, String orgName){
-        Organizer organizer = organizerRepository.findByUsername(username)
+    public OrganizerDTO deleteOrganizationMembership(String id, String orgName){
+        Organizer organizer = organizerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Organizer Not Found!"));
 
         Organization organization = organizationRepository.findByName(orgName)
