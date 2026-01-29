@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -212,6 +213,24 @@ public class OrganizationService {
         }
 
         return Mapper.mapOrganizationToDto(organization);
+    }
 
+    /**
+     * Business logic for generating organization analytics.
+     * Verifies the existence of the entity and ensures that only entities
+     *
+     * @param organizationId The unique identifier (username/id) of the organization.
+     * @return A list of HashMaps containing aggregated statistics.
+     * @throws RuntimeException if the organization is not found or the entity type is invalid.
+     */
+    public List<HashMap<?, ?>> getOrganizationAnalisys(String organizationId) {
+
+        Organization organization = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> new RuntimeException("Organization Not Found!"));
+
+        if (!organization.getType().equals("ORGANIZATION"))
+            throw new RuntimeException("Only Organization can be analyzed!");
+
+        return organizerRepository.getOrganizationAnalisys(organizationId);
     }
 }

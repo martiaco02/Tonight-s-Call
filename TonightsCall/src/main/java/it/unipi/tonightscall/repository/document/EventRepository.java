@@ -71,7 +71,21 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
      */
     Page<@NonNull Event> findByCategoriesInAndStartingDateGreaterThanEqual(List<String> categories, LocalDate date, Pageable pageable);
 
-
+        /**
+         * Computes comprehensive statistics for a specific event by aggregating attendee data.
+         * <p>
+         * The aggregation pipeline performs the following operations:
+         * <ol>
+         *      <li>Demographics: Calculates the average age of attendees by computing the {@code $dateDiff} between their birth date and the current time.</li>
+         *      <li>Financials: Estimates total income by reducing the attendee list and dynamically mapping {@code ticket_type} to its corresponding price in the {@code ticket_price} map.</li>
+         *      <li>Geographics: Generates a distribution map of attendee origins (home towns) using a combination of {@code $setUnion}, {@code $map}, and {@code $arrayToObject}.</li>
+         *      <li>Engagement: Counts total attendees and retrieves the current average event rating.</li>
+         * </ol>
+         * </p>
+         *
+         * @param eventId The unique identifier of the event to analyze.
+         * @return A {@link Statistics} object containing demographic, financial, and geographic insights.
+         */
     @Aggregation(pipeline = {
         "{ '$match': {'_id': ?0} }",
         """

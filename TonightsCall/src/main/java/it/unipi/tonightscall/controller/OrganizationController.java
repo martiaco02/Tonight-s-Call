@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -268,5 +270,37 @@ public class OrganizationController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
 
+    }
+
+    /**
+     * Retrieves a  performance analysis for an organization.
+     * <p>
+     * This endpoint provides a comparison between the total events hosted by the organization
+     * and the individual event counts for each associated organizer.
+     * </p>
+     *
+     * @param authentication The security context of the logged-in organization.
+     * @return A list of analysis data objects, or an error message if the entity is not an organization.
+     */
+    @Operation(summary = "Analyze organization performance", description = "Aggregates event statistics for the organization and its individual organizers.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Analysis generated successfully"),
+            @ApiResponse(responseCode = "404", description = "Organization not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid request or user is not an organization"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized access")
+    })
+    @GetMapping("/analyze")
+    public ResponseEntity<?> analyzeOrganization(Authentication authentication) {
+        try {
+
+            List<?> listOrganizer = organizationService.getOrganizationAnalisys(authentication.getName());
+
+            if (listOrganizer.isEmpty())
+                return ResponseEntity.notFound().build();
+
+            return ResponseEntity.ok().body(listOrganizer);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
