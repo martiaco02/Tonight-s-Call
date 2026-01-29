@@ -480,7 +480,7 @@ public class EventController {
                     content = @Content
             )
     })
-    @GetMapping("/publishStatistics/{event_id}")
+    @PutMapping("/publishStatistics/{event_id}")
     public ResponseEntity<?> publishStatistics(@PathVariable String event_id, Authentication authentication) {
         try{
             EventDTO eventDTO = eventService.publishStatistics(event_id, authentication.getName());

@@ -1,4 +1,4 @@
-    package it.unipi.tonightscall.service;
+package it.unipi.tonightscall.service;
 
 import it.unipi.tonightscall.DTO.EventDTO;
 import it.unipi.tonightscall.DTO.StatisticsDTO;
@@ -30,8 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-    @Service
-    public class EventService {
+@Service
+public class EventService {
 
     private final EventRepository eventRepository;
     private final EventGraphRepository eventGraphRepository;
@@ -54,87 +54,86 @@ import java.util.Optional;
         this.abstractOrganizerRepository = abstractOrganizerRepository;
     }
 
-        /**
-         * Find every event. This method had to be redefined to manage pagination
-         *
-         * @param pageable used to manage pagination
-         */
-        public Page<@NonNull EventDTO> getAllEvents(Pageable pageable) {
-            return this.eventRepository.findAll(pageable).map(Mapper::mapEventToDTO);
-        }
+    /**
+    * Find every event. This method had to be redefined to manage pagination
+    *
+    * @param pageable used to manage pagination
+    */
+    public Page<@NonNull EventDTO> getAllEvents(Pageable pageable) {
+        return this.eventRepository.findAll(pageable).map(Mapper::mapEventToDTO);
+    }
 
-        /**
-         * Find an event given its id
-         *
-         * @param id event's id
-         * @return the event having the id's params or null if it doesn't exist
-         */
-        public EventDTO getEventById(String id) {
-            Optional<Event> event = this.eventRepository.findById(id);
-            return event.map(Mapper::mapEventToDTO).orElse(null);
-        }
+    /**
+    * Find an event given its id
+    *
+    * @param id event's id
+    * @return the event having the id's params or null if it doesn't exist
+    */
+    public EventDTO getEventById(String id) {
+        Optional<Event> event = this.eventRepository.findById(id);
+        return event.map(Mapper::mapEventToDTO).orElse(null);
+    }
 
-        /**
-         * Find events that contain at least one of the specified topics
-         *
-         * @param topics the list of topics
-         * @param pageable used to manage
-         *
-         * @return Page<EventDTO> conteing the events or a null value if nothing was found
-         */
-        public Page<@NonNull EventDTO> getEventsByTopic(List<String> topics, Pageable pageable) {
-            Page<@NonNull Event> events = this.eventRepository.findByCategoriesIn(topics, pageable);
-            if (events.isEmpty())
-                return null;
+    /**
+    * Find events that contain at least one of the specified topics
+    *
+    * @param topics the list of topics
+    * @param pageable used to manage
+    *
+    * @return Page<EventDTO> conteing the events or a null value if nothing was found
+    */
+    public Page<@NonNull EventDTO> getEventsByTopic(List<String> topics, Pageable pageable) {
+        Page<@NonNull Event> events = this.eventRepository.findByCategoriesIn(topics, pageable);
+        if (events.isEmpty())
+            return null;
+        return events.map(Mapper::mapEventToDTO);
+    }
 
-            return events.map(Mapper::mapEventToDTO);
-        }
+    /**
+    * Find events that start at the specified date or later
+    *
+    * @param startingDate the starting date of the event
+    * @param pageable used to manage pagination
+    *
+    * @return Page<EventDTO> conteing the events or a null value if nothing was found
+    */
+    public Page<@NonNull EventDTO> getEventsByDate(LocalDate startingDate, Pageable pageable) {
+        Page<@NonNull Event> events = this.eventRepository.findByStartingDateGreaterThanEqual(startingDate, pageable);
+        if (events.isEmpty())
+            return null;
 
-        /**
-         * Find events that start at the specified date or later
-         *
-         * @param startingDate the starting date of the event
-         * @param pageable used to manage pagination
-         *
-         * @return Page<EventDTO> conteing the events or a null value if nothing was found
-         */
-        public Page<@NonNull EventDTO> getEventsByDate(LocalDate startingDate, Pageable pageable) {
-            Page<@NonNull Event> events = this.eventRepository.findByStartingDateGreaterThanEqual(startingDate, pageable);
-            if (events.isEmpty())
-                return null;
+        return events.map(Mapper::mapEventToDTO);
+    }
 
-            return events.map(Mapper::mapEventToDTO);
-        }
+    /**
+    * Find events based on their location
+    *
+    * @param location the point where events have to be found
+    * @param distance the max possible distance from location
+    * @param pageable used to manage pagination
+    */
+    public Page<@NonNull EventDTO> getEventsByLocation(Point location, Distance distance, Pageable pageable) {
+        Page<@NonNull Event> events = this.eventRepository.findByPositionLocationNear(location, distance, pageable);
+        if (events.isEmpty())
+            return null;
+        return events.map(Mapper::mapEventToDTO);
+    }
 
-        /**
-         * Find events based on their location
-         *
-         * @param location the point where events have to be found
-         * @param distance the max possible distance from location
-         * @param pageable used to manage pagination
-         */
-        public Page<@NonNull EventDTO> getEventsByLocation(Point location, Distance distance, Pageable pageable) {
-            Page<@NonNull Event> events = this.eventRepository.findByPositionLocationNear(location, distance, pageable);
-            if (events.isEmpty())
-                return null;
-            return events.map(Mapper::mapEventToDTO);
-        }
+    /**
+    * Find every event containing at least one of the specified topics and starting at the specified date or later
+    *
+    * @param categories the list of topics
+    * @param date the minimum starting date of the events
+    * @param pageable used to manage pagination
+    */
+    public Page<@NonNull EventDTO> getEventsByTopicAndDate(List<String> categories, LocalDate date, Pageable pageable) {
 
-        /**
-         * Find every event containing at least one of the specified topics and starting at the specified date or later
-         *
-         * @param categories the list of topics
-         * @param date the minimum starting date of the events
-         * @param pageable used to manage pagination
-         */
-        public Page<@NonNull EventDTO> getEventsByTopicAndDate(List<String> categories, LocalDate date, Pageable pageable) {
+        Page<@NonNull Event> events = this.eventRepository.findByCategoriesInAndStartingDateGreaterThanEqual(categories, date, pageable);
+        if (events.isEmpty())
+            return null;
 
-            Page<@NonNull Event> events = this.eventRepository.findByCategoriesInAndStartingDateGreaterThanEqual(categories, date, pageable);
-            if (events.isEmpty())
-                return null;
-
-            return events.map(Mapper::mapEventToDTO);
-        }
+        return events.map(Mapper::mapEventToDTO);
+    }
 
     /**
      * Updates an Event's data
@@ -276,83 +275,94 @@ import java.util.Optional;
         return eventGraphRepository.findAllEmailFromAttendingUser(oldEvent.getId());
     }
 
-        /**
-         * This method calculates statistics of a specific event and stores them in it
-         *
-         * @param event_id      The id of the event
-         * @param id            The id of the organizer of the event
-         * @return              The StatisticsDTO containing the results
-         * @throws IllegalArgumentException If the event or organizer are not found, or if the event was not created by the specific organizer
-         */
+    /**
+    * This method calculates statistics of a specific event and stores them in it
+    *
+    * @param event_id      The id of the event
+    * @param id            The id of the organizer of the event
+    * @return              The StatisticsDTO containing the results
+    * @throws IllegalArgumentException If the event or organizer are not found, or if the event was not created by the specific organizer
+    */
+    @Transactional
+    public StatisticsDTO calculateStatistics(String event_id, String id){
+        Event event = eventRepository.findById(event_id)
+            .orElseThrow(() -> new IllegalArgumentException("Event Not Found!"));
 
-        @Transactional
-        public StatisticsDTO calculateStatistics(String event_id, String id){
-            Event event = eventRepository.findById(event_id)
-                    .orElseThrow(() -> new IllegalArgumentException("Event Not Found!"));
+        AbstracOrganizer abstracOrganizer = organizerRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Organizer Not Found!"));
 
-            System.out.println(id);
-
-            AbstracOrganizer abstracOrganizer = organizerRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Organizer Not Found!"));
-
-            System.out.println(abstracOrganizer.getEvents());
-
-            boolean present = false;
-            for(int i=0; i<abstracOrganizer.getEvents().size(); i++){
-                if(abstracOrganizer.getEvents().get(i).getId().equals(event_id)){
-                    present = true;
-                }
+        boolean present = false;
+        for(int i=0; i<abstracOrganizer.getEvents().size(); i++){
+            if(abstracOrganizer.getEvents().get(i).getId().equals(event_id)){
+                present = true;
+                break;
             }
-
-            if(!present){
-                throw new IllegalArgumentException("You can only calculate statistics of your events!");
-            }
-            //Aggregation
-            Statistics statistics = eventRepository.calculateStatistics(event_id);
-            if(statistics == null){
-                throw new IllegalArgumentException("Couldn't calculate statistics!");
-            }
-
-            event.setStatistics(statistics);
-            eventRepository.save(event);
-            return Mapper.mapStatisticsToDto(statistics);
         }
 
-
-        /**
-         * This method marks the event's statistics as "publishable" by setting the specific flag = true.
-         * @param event_id The id of the event of which the statistics have to be published.
-         * @param id The id of the organizer of the event.
-         * @return The EventDTO, containing the statistics.
-         * @throws IllegalArgumentException If the event or organizer are not found, or if the event was not created by the specific organizer.
-         */
-        public EventDTO publishStatistics(String event_id, String id) {
-            Event event = eventRepository.findById(event_id)
-                    .orElseThrow(() -> new IllegalArgumentException("Event Not Found!"));
-
-            //TODO: cambiare la prossima findByUsername con findById ma altrimenti non potevo testare perché ho versione vecchia
-            AbstracOrganizer abstracOrganizer = organizerRepository.findByUsername(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Organizer Not Found!"));
-
-            boolean present = false;
-            for(int i=0; i<abstracOrganizer.getEvents().size(); i++){
-                if(abstracOrganizer.getEvents().get(i).getId().equals(event_id)){
-                    present = true;
-                    break;
-                }
-            }
-
-            if(!present){
-                throw new IllegalArgumentException("You can only calculate statistics of your events!" + abstracOrganizer.getEvents());
-            }
-
-            if(event.getStatistics()== null){
-                throw new IllegalArgumentException("Couldn't calculate statistics!");
-            }
-
-            event.getStatistics().setPublish(true);
-            eventRepository.save(event);
-            return Mapper.mapEventToDto(event);
+        if(!present){
+            throw new IllegalArgumentException("You can only calculate statistics of your events!");
         }
+
+        if (event.getAttendees() == null || event.getAttendees().isEmpty()) {
+            throw new IllegalArgumentException("None has attended the event y   et!");
+        }
+
+        //Aggregation
+        Statistics statistics = eventRepository.calculateStatistics(event_id);
+        if(statistics == null){
+            throw new IllegalArgumentException("Couldn't calculate statistics!");
+        }
+
+        event.setStatistics(statistics);
+        eventRepository.save(event);
+        return Mapper.mapStatisticsToDto(statistics);
+    }
+
+    /**
+     * Find all events in a specific city
+     *
+     * @param cityName The name of the specific city in which the events must be searched
+     * @param pageable used to manage pagionation
+     */
+    public Page<@NonNull EventDTO> getEventsByCity(String cityName,  Pageable pageable) {
+        Page<@NonNull Event> events = this.eventRepository.findByPosition_CityName(cityName, pageable);
+        if (events.isEmpty())
+            return null;
+        return events.map(Mapper::mapEventToDTO);
+    }
+
+    /**
+    * This method marks the event's statistics as "publishable" by setting the specific flag = true.
+    * @param event_id The id of the event of which the statistics have to be published.
+    * @param id The id of the organizer of the event.
+    * @return The EventDTO, containing the statistics.
+    * @throws IllegalArgumentException If the event or organizer are not found, or if the event was not created by the specific organizer.
+    */
+    public EventDTO publishStatistics(String event_id, String id) {
+        Event event = eventRepository.findById(event_id)
+            .orElseThrow(() -> new IllegalArgumentException("Event Not Found!"));
+
+        AbstracOrganizer abstracOrganizer = organizerRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Organizer Not Found!"));
+
+        boolean present = false;
+        for(int i=0; i<abstracOrganizer.getEvents().size(); i++){
+            if(abstracOrganizer.getEvents().get(i).getId().equals(event_id)){
+                present = true;
+                break;
+            }
+        }
+
+        if(!present){
+            throw new IllegalArgumentException("You can only calculate statistics of your events!");
+        }
+
+        if(event.getStatistics()== null){
+            throw new IllegalArgumentException("You need to calculate the statistics of the event!");
+        }
+
+        event.getStatistics().setPublish(true);
+        eventRepository.save(event);
+        return Mapper.mapEventToDTO(event);
     }
 }

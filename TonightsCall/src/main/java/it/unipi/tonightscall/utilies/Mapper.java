@@ -376,76 +376,6 @@ public class Mapper {
     }
 
     /**
-     * Converts an Event Entity (Database object) into an EventDTO (API object).
-     * <p>
-     * Populates the DTO with event details.
-     * </p>
-     *
-     * @param entity The Event entity retrieved from MongoDB.
-     * @return An EventDTO populated with data.
-     */
-    public static EventDTO mapEventToDto(Event entity) {
-
-        if (entity == null) {
-            return null;
-        }
-
-        EventDTO dto = new EventDTO();
-        dto.setId(entity.getId());
-        dto.setEventName(entity.getEventName());
-        dto.setPosition(mapAddressToDto(entity.getPosition()));
-        dto.setTicketPrice(entity.getTicketPrice());
-        dto.setStartingDate(entity.getStartingDate());
-        dto.setEndingDate(entity.getEndingDate());
-        dto.setCategories(entity.getCategories());
-        dto.setDescription(entity.getDescription());
-        dto.setUrlImg(entity.getUrlImg());
-        dto.setStartingTimes(entity.getStartingTimes());
-        dto.setTotalReview(entity.getTotalReview());
-        dto.setEventScore(entity.getEventScore());
-        dto.setStatistic(mapStatisticsToDto(entity.getStatistics()));
-
-        //  Review array
-        List<Review> reviews = entity.getReviews();
-        if (reviews != null) {
-            List<ReviewDTO> reviewsDTO = new ArrayList<>();
-            for (Review re : reviews) {
-                ReviewDTO revDTO = new ReviewDTO(
-                        re.getScore(),
-                        re.getUsername(),
-                        re.getText()
-                );
-                reviewsDTO.add(revDTO);
-            }
-            dto.setReviews(reviewsDTO);
-        } else  {
-            dto.setReviews(new ArrayList<>());
-        }
-
-        //  Attendees array
-        List<Attendent> attendents = entity.getAttendees();
-        if (attendents != null) {
-            List<AttendentDTO> attendentsDTO = new ArrayList<>();
-            for (Attendent at : attendents) {
-                AttendentDTO attDTO = new AttendentDTO(
-                        at.getId(),
-                        at.getTicketType(),
-                        at.getEmail(),
-                        at.getUsername(),
-                        at.getHomeTown(),
-                        at.getDateOfBirth()
-                );
-                attendentsDTO.add(attDTO);
-            }
-            dto.setAttendees(attendentsDTO);
-        } else  {
-            dto.setAttendees(new ArrayList<>());
-        }
-
-        return dto;
-    }
-
-    /**
      * Converts an LocationDTO (API object) into a Location Entity (Database object).
      * <p>
      * Maps every field
@@ -828,13 +758,16 @@ public class Mapper {
 
         Statistics statistics = entity.getStatistics();
         if (statistics != null) {
-            StatisticsDTO statisticsDTO = new StatisticsDTO();
-            statisticsDTO.setDateUpdate(statistics.getDateUpdate());
-            statisticsDTO.setAverageAge(statistics.getAverageAge());
-            statisticsDTO.setPredictedIncome(statistics.getPredictedIncome());
-            statisticsDTO.setOriginAttenders(Map.copyOf(statistics.getOriginAttenders()));
-            statisticsDTO.setTotalAttenders(statistics.getTotalAttenders());
-            eventDTO.setStatistic(statisticsDTO);
+            if (statistics.isPublish()) {
+                StatisticsDTO statisticsDTO = new StatisticsDTO();
+                statisticsDTO.setDateUpdate(statistics.getDateUpdate());
+                statisticsDTO.setAverageAge(statistics.getAverageAge());
+                statisticsDTO.setPredictedIncome(statistics.getPredictedIncome());
+                statisticsDTO.setOriginAttenders(Map.copyOf(statistics.getOriginAttenders()));
+                statisticsDTO.setTotalAttenders(statistics.getTotalAttenders());
+                statisticsDTO.setPublish(true);
+                eventDTO.setStatistic(statisticsDTO);
+            }
         } else {
             eventDTO.setStatistic(null);
         }
