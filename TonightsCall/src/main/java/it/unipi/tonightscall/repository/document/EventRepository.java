@@ -1,12 +1,15 @@
 package it.unipi.tonightscall.repository.document;
 
 import it.unipi.tonightscall.entity.document.Event;
+import it.unipi.tonightscall.entity.document.Statistics;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.repository.Aggregation;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -83,4 +86,91 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
      * @param pageable used to manage pagination
      */
     Page<@NonNull Event> findByCategoriesInAndStartingDateGreaterThanEqual(List<String> categories, LocalDate date, Pageable pageable);
+
+
+    @Aggregation(pipeline = {
+            // STAGE 0: filtering: taking the event of which we are going to calculate the statistics (?0 = placeholder for first argument from Java method)
+            //                     we are considering the event with a specific event_id
+            "{'$match':  {'_id':  ?0}}",
+            // STAGE 1: Unwinding attendees of the event that is being considered
+            "{ '$unwind': { 'path': '$attendees', 'preserveNullAndEmptyArrays': false } }",
+
+            // STAGE 2: Projection: calculating age of attendees and avg
+            """
+            {
+              "$project": {
+                "event_score": 1,
+                "origin": "$attendees.home_town",
+                "age": {
+                  "$dateDiff": {
+                    "startDate": { "$toDate": "$attendees.date_of_birth" },
+                    "endDate": "$$NOW",
+                    "unit": "year"
+                  }
+                },
+                "pricePaid": {
+                  "$avg": {
+                    "$map": {
+                      "input": { "$objectToArray": "$ticket_price" },
+                      "as": "priceItem",
+                      "in": "$$priceItem.v"
+                    }
+                  }
+                }
+              }
+            }
+            """,
+
+            // STAGE 3: Grouping by Event and City
+            """
+            {
+              "$group": {
+                "_id": { "id": "$_id", "origin": "$origin" },
+                "countPerCity": { "$sum": 1 },
+                "partialAgeSum": { "$sum": "$age" },
+                "partialIncomeSum": { "$sum": "$pricePaid" },
+                "eventScore": { "$first": "$event_score" }
+              }
+            }
+            """,
+
+            // STAGE 4: Grouping by Event
+            """
+            {
+              "$group": {
+                "_id": "$_id.id",
+                "totalAttenders": { "$sum": "$countPerCity" },
+                "totalAgeSum": { "$sum": "$partialAgeSum" },
+                "totalIncome": { "$sum": "$partialIncomeSum" },
+                "averageRating": { "$first": "$eventScore" },
+                "originList": {
+                  "$push": { "k": "$_id.origin", "v": "$countPerCity" }
+                }
+              }
+            }
+            """,
+
+            // STAGE 5: Putting right fields for Statistics object
+            """
+            {
+              "$project": {
+                  "date_update": "$$NOW",
+                  "total_attenders": "$totalAttenders",
+                  "publish": {"$literal": false},
+                  "predicted_income": "$totalIncome",
+                  "average_rating": { "$ifNull": ["$averageRating", 0] },
+                  "average_age": {
+                    "$cond": [
+                      { "$eq": ["$totalAttenders", 0] },
+                      0,
+                      { "$divide": ["$totalAgeSum", "$totalAttenders"] }
+                    ]
+                  },
+                  "origin_attenders": { "$arrayToObject": "$originList" }
+              }
+            }
+            """
+    })
+    Statistics calculateStatistics(String eventId);
+
 }

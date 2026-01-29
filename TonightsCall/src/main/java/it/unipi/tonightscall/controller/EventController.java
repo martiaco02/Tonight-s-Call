@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import it.unipi.tonightscall.DTO.EventDTO;
+import it.unipi.tonightscall.DTO.StatisticsDTO;
 import it.unipi.tonightscall.entity.document.Event;
 import it.unipi.tonightscall.service.EventService;
 import jakarta.validation.constraints.Min;
@@ -223,7 +224,7 @@ public class EventController {
      * @return ResponseEntity containing the page or error
      */
 
-    @GetMapping("events/city/{cityName}")
+    @GetMapping("/city/{cityName}")
     public ResponseEntity<?> getEventsByCity(@PathVariable String cityName, @RequestParam (defaultValue = "0") @Min(0) int page) {
         try{
             Pageable pageable = PageRequest.of(page, this.eventService.PAGE_SIZE);
@@ -362,4 +363,92 @@ public class EventController {
             return new ResponseEntity<>("403 - Forbidden: You don't have permission", HttpStatus.FORBIDDEN);
         }
     }
+
+    /**
+     * Calculates the statistics of an event.
+     *
+     * @param event_id  The ID of the event.
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
+     * @return The statisticsDTO containing the results of the calculation.
+     */
+    @Operation(
+            summary = "Calculates and event's Statistics",
+            description = "Calculates Statistics relative to a specific event and updated its related data."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Statistics calculated and event updated successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = StatisticsDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input, Event not found",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Event Not Found",
+                    content = @Content
+            )
+    })
+    @GetMapping("statistics/{event_id}")
+    public ResponseEntity<?> calculateStatistics(@PathVariable String event_id, Authentication authentication) {
+        try{
+            StatisticsDTO statisticsDTO = eventService.calculateStatistics(event_id, authentication.getName());
+            return ResponseEntity.ok(statisticsDTO);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * Publishes the statistics of an event.
+     *
+     * @param event_id  The ID of the event
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
+     * @return The eventDTO containing the statistics.
+     */
+    @Operation(
+            summary = "Updates an Event's data",
+            description = "Updates information about an existing Event."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Event's statistics retrieved succesfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = EventDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input, Event not found",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Event Not Found",
+                    content = @Content
+            )
+    })
+
+    @GetMapping("/publishStatistics/{event_id}")
+    public ResponseEntity<?> publishStatistics(@PathVariable String event_id, Authentication authentication) {
+        try{
+            EventDTO eventDTO = eventService.publishStatistics(event_id, authentication.getName());
+            return  ResponseEntity.ok(eventDTO);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }
