@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 
     /**
@@ -71,21 +72,27 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
      */
     Page<@NonNull Event> findByCategoriesInAndStartingDateGreaterThanEqual(List<String> categories, LocalDate date, Pageable pageable);
 
-        /**
-         * Computes comprehensive statistics for a specific event by aggregating attendee data.
-         * <p>
-         * The aggregation pipeline performs the following operations:
-         * <ol>
-         *      <li>Demographics: Calculates the average age of attendees by computing the {@code $dateDiff} between their birth date and the current time.</li>
-         *      <li>Financials: Estimates total income by reducing the attendee list and dynamically mapping {@code ticket_type} to its corresponding price in the {@code ticket_price} map.</li>
-         *      <li>Geographics: Generates a distribution map of attendee origins (home towns) using a combination of {@code $setUnion}, {@code $map}, and {@code $arrayToObject}.</li>
-         *      <li>Engagement: Counts total attendees and retrieves the current average event rating.</li>
-         * </ol>
-         * </p>
-         *
-         * @param eventId The unique identifier of the event to analyze.
-         * @return A {@link Statistics} object containing demographic, financial, and geographic insights.
-         */
+
+    /**
+     * Aggregates and computes detailed analytics for a specific event.
+     * <p>
+     * The pipeline performs a multi-stage transformation:
+     * <ul>
+     *  <li>Filters by event ID.</li>
+     *  <li> Pre-calculates core metrics:
+     *      <ul>
+     *          <li>Calculates attendee ages using {@code $dateDiff} between their birth date and the current time.</li>
+     *          <li>Computes dynamic income by matching attendee {@code ticket_type} with the event's {@code ticket_price} map.</li>
+     *          <li>Builds a frequency list of attendee origins (home towns).</li>
+     *      </ul>
+     * </li>
+     * <li> Finalizes metrics, including average age and converts the origin list into a structured map (object).</li>
+     * </ul>
+     * </p>
+     *
+     * @param eventId The unique identifier of the event.
+     * @return A {@link Statistics} object containing demographic, financial, and geographic data.
+     */
     @Aggregation(pipeline = {
         "{ '$match': {'_id': ?0} }",
         """
@@ -167,5 +174,69 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
         """
     })
     Statistics calculateStatistics(String eventId);
+
+    /**
+    * Generates a monthly distribution of events for a specific city and year.
+    * <p>
+    *   This query is designed for time-series analysis and ensures a complete data set:
+    *   <ul>
+    *   <li>Filtering: Matches events based on the specified city name and year of the {@code starting_date}.</li>
+    *   <li>Grouping: Aggregates the count of events occurring in each month.</li>
+    *   <li>Densification: Uses {@code $densify} to ensure all 12 months (1-12) are present in the output,  filling missing months with zero values.</li>
+    *   <li>Projection: Maps month numbers to their full English names  and formats the final output map.</li>
+    * </ul>
+    * </p>
+    *
+    * @param city The name of the city to filter by.
+    * @param year The year to analyze.
+    * @return A list of maps, each containing the city, year, month name, and event count.
+    */
+    @Aggregation(pipeline = {
+        """
+        {
+            "$match": {
+                "position.city_name": ?0, 
+                "$expr": { "$eq": [ { "$year": "$starting_date" }, ?1 ] }
+            }
+        }
+        """,
+        """
+        {
+            "$group": {
+                "_id": { "$month": "$starting_date" },
+                "total_count": { "$sum": 1 }
+            }
+        }
+        """,
+        """
+        {
+            "$densify": {
+                "field": "_id",
+                "range": {
+                    "step": 1,
+                    "bounds": [1, 13]
+                }
+            }
+        }
+        """,
+        "{ '$sort': { '_id': 1 } }",
+        """
+        {
+            "$project": {
+                "city": ?0,
+                "year": {"$literal": ?1},
+                "month": {
+                    "$arrayElemAt": [
+                        [ "", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ],
+                        "$_id"
+                    ]
+                },
+                "event_count": { "$ifNull": ["$total_count", 0] },
+                "_id": 0
+            }
+        }
+        """
+    })
+    List<HashMap<String, Object>> eventDemographic(String city, int year);
 
 }

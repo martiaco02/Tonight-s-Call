@@ -68,6 +68,7 @@
                             .requestMatchers("/organizer/**").hasAnyAuthority(Roles.ORGANIZER_ROLE, Roles.ORGANIZATION_ROLE)
                             .requestMatchers("/user/**").hasAuthority(Roles.USER_ROLE)
                             .requestMatchers("/organization/**").hasAuthority(Roles.ORGANIZATION_ROLE)
+                            .requestMatchers("/event/demographics/**").hasAuthority(Roles.USER_ROLE)
                             .requestMatchers("/event/statistics/**").hasAnyAuthority(Roles.ORGANIZER_ROLE, Roles.ORGANIZATION_ROLE)
                             .requestMatchers("/event/publishStatistics/**").hasAnyAuthority(Roles.ORGANIZER_ROLE, Roles.ORGANIZATION_ROLE)
                             .requestMatchers("/event/update-event/**").hasAnyAuthority(Roles.ORGANIZER_ROLE, Roles.ORGANIZATION_ROLE)

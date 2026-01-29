@@ -7,17 +7,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import it.unipi.tonightscall.DTO.EventDTO;
 import it.unipi.tonightscall.DTO.StatisticsDTO;
-import it.unipi.tonightscall.DTO.UserDTO;
 import it.unipi.tonightscall.entity.document.Event;
 import it.unipi.tonightscall.service.EventService;
-import it.unipi.tonightscall.service.UserService;
 import jakarta.validation.constraints.Min;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.Metrics;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,6 +23,7 @@ import org.springframework.data.geo.Point;
 
 import java.awt.*;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -36,11 +34,9 @@ import java.util.List;
 public class EventController {
 
     private final EventService eventService;
-    private final UserService userService;
 
-    public EventController(EventService eventService, UserService userService) {
+    public EventController(EventService eventService) {
         this.eventService = eventService;
-        this.userService = userService;
     }
 
     /**
@@ -70,7 +66,7 @@ public class EventController {
                     content = @Content
             )
     })
-    @GetMapping
+    @GetMapping("/events")
     public ResponseEntity<?> getAllEvents(@RequestParam(defaultValue = "0") @Min(0) int page) {
         try {
             Pageable pageable = PageRequest.of(page, this.eventService.PAGE_SIZE);
@@ -263,12 +259,13 @@ public class EventController {
             @ApiResponse(responseCode = "400", description = "Invalid coordinates", content = @Content)
     })
     @GetMapping("/search/location")
-    public ResponseEntity<?> getEventsByLocation(@RequestParam double longitude,@RequestParam double latitude, @RequestParam  double distance, @RequestParam(defaultValue = "0") @Min(0) int page) {
+    public ResponseEntity<?> getEventsByLocation(@RequestParam double longitude,@RequestParam double latitude, Distance distance, @RequestParam(defaultValue = "0") @Min(0) int page) {
+
         try {
             Point location = new Point(longitude, latitude);
             Pageable pageable = PageRequest.of(page, this.eventService.PAGE_SIZE);
 
-            Page<@NonNull EventDTO> events = this.eventService.getEventsByLocation(location, new Distance(distance, Metrics.KILOMETERS), pageable);
+            Page<@NonNull EventDTO> events = this.eventService.getEventsByLocation(location, distance, pageable);
             if (events == null) {
                 return ResponseEntity.notFound().build();
             } else if (events.isEmpty()) {
@@ -323,17 +320,17 @@ public class EventController {
      * @param event_id  The ID of the updated event
      * @param authentication  The security context containing the current user's details (injected by Spring Security).
      * @param eventDTO The updated details of the event
-     * @return The list of emails of every user which stated their presence at the event if successful, or an error message otherwise.
+     * @return The updated eventDTO and the list of emails of every user which stated their presence at the event if successful, or an error message otherwise.
      */
     @Operation(
             summary = "Updates an Event's data",
-            description = "Updates information about an existing Event and return all the users attending the event"
+            description = "Updates information about an existing Event."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "Event updated successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = EventDTO.class))
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -352,55 +349,19 @@ public class EventController {
             )
     })
     @PutMapping("/update-event/{event_id}")
-    public ResponseEntity<?> updateEvent(@PathVariable String event_id, @RequestBody EventDTO eventDTO, Authentication authentication) {
+    public ResponseEntity<?> updateEvent(@PathVariable String event_id, Authentication authentication, @RequestBody EventDTO eventDTO) {
         try{
-            List<String> emails = eventService.updateEvent(event_id, authentication.getName(), eventDTO);
-            return ResponseEntity.ok(emails);
+            EventDTO updatedEvent = eventService.updateEvent(event_id, authentication.getName(), eventDTO);
+            if (updatedEvent == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(updatedEvent);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IllegalAccessException e) {
             return new ResponseEntity<>("403 - Forbidden: You don't have permission", HttpStatus.FORBIDDEN);
-        }
-    }
-
-    /**
-     * Removes an Attendance from the system.
-     *
-     * @param eventID The id of the Event the Attendance is related to.
-     * @param authentication Security context of the user performing the action.
-     * @return The updated UserDTO if successful, or an error message if the request is invalid.
-     */
-    @Operation(
-            summary = "Removes a user attendance to an event",
-            description = "Removes the previously stated attendance of a user to a specific event."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Attendance removed successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Invalid input, User or Event are not found",
-                    content = @Content(mediaType = "text/plain")
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Forbidden (User is not authorized)",
-                    content = @Content(mediaType = "text/plain")
-            )
-    })
-    @DeleteMapping("/attending/{eventID}")
-    public ResponseEntity<?> deleteAttendance(@PathVariable String eventID, Authentication authentication) {
-        try{
-
-            UserDTO userDTO = userService.deleteAttendance(eventID, authentication.getName());
-            return ResponseEntity.ok(userDTO);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -480,12 +441,61 @@ public class EventController {
                     content = @Content
             )
     })
-    @PutMapping("/publishStatistics/{event_id}")
+    @GetMapping("/publishStatistics/{event_id}")
     public ResponseEntity<?> publishStatistics(@PathVariable String event_id, Authentication authentication) {
         try{
             EventDTO eventDTO = eventService.publishStatistics(event_id, authentication.getName());
             return  ResponseEntity.ok(eventDTO);
         } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * Calculates number of event per month over a given year, considering events available in a specific city
+     *
+     * @param year The year in which the events are held
+     * @param city_name The city in which to look for events
+     * @param authentication  The security context containing the current user's details (injected by Spring Security).
+     *
+     * @return The list of months and count of events for each
+     */
+    @Operation(
+            summary = "Calculates events' count for each month",
+            description = "Calculates how many events are held in a specific city in a specific year for each month."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Information calculated and retrieved succesfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = EventDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input, Event not found",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (User is not authorized)",
+                    content = @Content(mediaType = "text/plain")
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Event Not Found",
+                    content = @Content
+            )
+    })
+    @GetMapping("demographics/{year}/{city_name}")
+    public ResponseEntity<?> eventDemographics(@PathVariable int year, @PathVariable String city_name, Authentication authentication) {
+        try{
+            List<HashMap<String, Object>> result = eventService.eventDemographic(city_name, year, authentication.getName());
+
+            if (result == null || result.isEmpty())
+                return ResponseEntity.noContent().build();
+
+            return ResponseEntity.ok(result);
+        } catch(RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
