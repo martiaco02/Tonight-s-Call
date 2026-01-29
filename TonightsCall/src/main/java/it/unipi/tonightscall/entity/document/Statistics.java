@@ -58,7 +58,6 @@ public class Statistics {
     /**
      * Flags that indicates if the statistics can be published or not
      */
-
     @Field("publish")
     private boolean publish;
 }

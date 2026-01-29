@@ -440,7 +440,6 @@ public class EventController {
                     content = @Content
             )
     })
-
     @GetMapping("/publishStatistics/{event_id}")
     public ResponseEntity<?> publishStatistics(@PathVariable String event_id, Authentication authentication) {
         try{

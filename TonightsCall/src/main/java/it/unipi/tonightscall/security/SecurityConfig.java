@@ -66,8 +66,11 @@ public class SecurityConfig {
                         .requestMatchers("/organizer/registerOrganization").hasAuthority(Roles.ORGANIZER_ROLE)
                         .requestMatchers("/organization/request").hasAuthority(Roles.ORGANIZER_ROLE)
                         .requestMatchers("/organizer/**").hasAnyAuthority(Roles.ORGANIZER_ROLE, Roles.ORGANIZATION_ROLE)
+                        .requestMatchers("/event/statistics/**").hasAnyAuthority(Roles.ORGANIZER_ROLE, Roles.ORGANIZATION_ROLE)
+                        .requestMatchers("/event/publishStatistics/**").hasAnyAuthority(Roles.ORGANIZER_ROLE, Roles.ORGANIZATION_ROLE)
                         .requestMatchers("/user/**").hasAuthority(Roles.USER_ROLE)
                         .requestMatchers("/organization/**").hasAuthority(Roles.ORGANIZATION_ROLE)
+                        .requestMatchers("/event/**").permitAll()
                         .anyRequest().authenticated() // // 3. All other requests require a valid JWT token
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

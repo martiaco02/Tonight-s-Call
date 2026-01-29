@@ -62,22 +62,6 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
      */
     Page<@NonNull Event> findByPositionLocationNear(Point location, Distance distance, Pageable pageable);
 
-    /*  C'è la possibilità che findByPositionLocationNear non funzioni perché vuole come parametro un oggetto Location,
-        ma a quel punto $near non funziona più perché mongo vuole un Point, quindi o si usa la @Query sotto o si mette
-        Point nella classe Location invece di type e coordinates
-     */
-    /*@Query("""
-    {
-      'address.loc': {
-        $nearSphere: {
-          $geometry: { type: 'Point', coordinates: ?0 },
-          $maxDistance: ?1
-        }
-      }
-    }
-    """)
-    Page<Event> findEventsNear(List<Double> coordinates, double maxDistance, Pageable pageable);*/
-
     /**
      * Find every event containing at least one of the specified topics and starting at the specified date or later
      *
@@ -89,87 +73,84 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
 
 
     @Aggregation(pipeline = {
-            // STAGE 0: filtering: taking the event of which we are going to calculate the statistics (?0 = placeholder for first argument from Java method)
-            //                     we are considering the event with a specific event_id
-            "{'$match':  {'_id':  ?0}}",
-            // STAGE 1: Unwinding attendees of the event that is being considered
-            "{ '$unwind': { 'path': '$attendees', 'preserveNullAndEmptyArrays': false } }",
-
-            // STAGE 2: Projection: calculating age of attendees and avg
-            """
-            {
-              "$project": {
-                "event_score": 1,
-                "origin": "$attendees.home_town",
-                "age": {
-                  "$dateDiff": {
-                    "startDate": { "$toDate": "$attendees.date_of_birth" },
-                    "endDate": "$$NOW",
-                    "unit": "year"
-                  }
-                },
-                "pricePaid": {
-                  "$avg": {
-                    "$map": {
-                      "input": { "$objectToArray": "$ticket_price" },
-                      "as": "priceItem",
-                      "in": "$$priceItem.v"
+        "{ '$match': {'_id': ?0} }",
+        """
+        {
+            "$project": {
+                "total_attenders": { "$size": { "$ifNull": ["$attendees", []] } },
+                "average_rating": { "$ifNull": ["$event_score", 0] },
+                "date_update": "$$NOW",
+                "publish": { "$literal": false },
+                "totalAgeSum": {
+                    "$reduce": {
+                        "input": { "$ifNull": ["$attendees", []] },
+                        "initialValue": 0,
+                        "in": {
+                            "$add": [
+                                "$$value",
+                                {
+                                    "$dateDiff": {
+                                        "startDate": { "$toDate": "$$this.date_of_birth" },
+                                        "endDate": "$$NOW",
+                                        "unit": "year"
+                                    }
+                                }
+                            ]
+                        }
                     }
-                  }
-                }
-              }
-            }
-            """,
-
-            // STAGE 3: Grouping by Event and City
-            """
-            {
-              "$group": {
-                "_id": { "id": "$_id", "origin": "$origin" },
-                "countPerCity": { "$sum": 1 },
-                "partialAgeSum": { "$sum": "$age" },
-                "partialIncomeSum": { "$sum": "$pricePaid" },
-                "eventScore": { "$first": "$event_score" }
-              }
-            }
-            """,
-
-            // STAGE 4: Grouping by Event
-            """
-            {
-              "$group": {
-                "_id": "$_id.id",
-                "totalAttenders": { "$sum": "$countPerCity" },
-                "totalAgeSum": { "$sum": "$partialAgeSum" },
-                "totalIncome": { "$sum": "$partialIncomeSum" },
-                "averageRating": { "$first": "$eventScore" },
+                },
+                "calculatedIncome": {
+                    "$reduce": {
+                        "input": { "$ifNull": ["$attendees", []] },
+                        "initialValue": 0,
+                        "in": {
+                            "$add": [
+                                "$$value",
+                                { "$ifNull": [ { "$getField": { "field": "$$this.ticket_type", "input": "$ticket_price" } }, 0 ] }
+                            ]
+                        }
+                    }
+                },
                 "originList": {
-                  "$push": { "k": "$_id.origin", "v": "$countPerCity" }
+                    "$map": {
+                        "input": { "$setUnion": { "$ifNull": ["$attendees.home_town", []] } },
+                        "as": "city",
+                        "in": {
+                            "k": "$$city",
+                            "v": {
+                                "$size": {
+                                    "$filter": {
+                                        "input": { "$ifNull": ["$attendees", []] },
+                                        "as": "att",
+                                        "cond": { "$eq": ["$$att.home_town", "$$city"] }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-              }
             }
-            """,
-
-            // STAGE 5: Putting right fields for Statistics object
-            """
-            {
-              "$project": {
-                  "date_update": "$$NOW",
-                  "total_attenders": "$totalAttenders",
-                  "publish": {"$literal": false},
-                  "predicted_income": "$totalIncome",
-                  "average_rating": { "$ifNull": ["$averageRating", 0] },
-                  "average_age": {
+        }
+        """,
+        """
+        {
+            "$project": {
+                "date_update": 1,
+                "total_attenders": 1,
+                "publish": 1,
+                "average_rating": 1,
+                "predicted_income": { "$ifNull": ["$calculatedIncome", 0] },
+                "average_age": {
                     "$cond": [
-                      { "$eq": ["$totalAttenders", 0] },
-                      0,
-                      { "$divide": ["$totalAgeSum", "$totalAttenders"] }
+                        { "$eq": ["$total_attenders", 0] },
+                        0,
+                        { "$divide": ["$totalAgeSum", { "$cond": [{ "$eq": ["$total_attenders", 0] }, 1, "$total_attenders"] }] }
                     ]
-                  },
-                  "origin_attenders": { "$arrayToObject": "$originList" }
-              }
+                },
+                "origin_attenders": { "$arrayToObject": "$originList" }
             }
-            """
+        }
+        """
     })
     Statistics calculateStatistics(String eventId);
 

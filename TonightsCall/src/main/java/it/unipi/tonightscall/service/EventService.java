@@ -269,9 +269,13 @@
             Event event = eventRepository.findById(event_id)
                     .orElseThrow(() -> new IllegalArgumentException("Event Not Found!"));
 
+            System.out.println(id);
+
             //TODO: cambiare la prossima findByUsername con findById ma altrimenti non potevo testare perché ho versione vecchia
             AbstracOrganizer abstracOrganizer = organizerRepository.findByUsername(id)
                     .orElseThrow(() -> new IllegalArgumentException("Organizer Not Found!"));
+
+            System.out.println(abstracOrganizer.getEvents());
 
             boolean present = false;
             for(int i=0; i<abstracOrganizer.getEvents().size(); i++){
@@ -314,11 +318,12 @@
             for(int i=0; i<abstracOrganizer.getEvents().size(); i++){
                 if(abstracOrganizer.getEvents().get(i).getId().equals(event_id)){
                     present = true;
+                    break;
                 }
             }
 
             if(!present){
-                throw new IllegalArgumentException("You can only calculate statistics of your events!");
+                throw new IllegalArgumentException("You can only calculate statistics of your events!" + abstracOrganizer.getEvents());
             }
 
             if(event.getStatistics()== null){
