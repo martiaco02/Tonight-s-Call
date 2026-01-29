@@ -1,12 +1,15 @@
 package it.unipi.tonightscall.repository.document;
 
 import it.unipi.tonightscall.entity.document.Event;
+import it.unipi.tonightscall.entity.document.Statistics;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.repository.Aggregation;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -43,6 +46,13 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
      */
     Page<@NonNull Event> findByStartingDateGreaterThanEqual(LocalDate startingDate, Pageable pageable);
 
+        /**
+         * Find events of a specific city
+         * @param cityName the specified city in which to search for available events
+         * @param pageable used to manage pagination
+         */
+    Page<@NonNull Event> findByPosition_CityName(String cityName, Pageable pageable);
+
     /**
      * Given the coordinates of a point [lon, lat], find every event near that point, given a maximum admissible distance
      *
@@ -52,22 +62,6 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
      */
     Page<@NonNull Event> findByPositionLocationNear(Point location, Distance distance, Pageable pageable);
 
-    /*  C'è la possibilità che findByPositionLocationNear non funzioni perché vuole come parametro un oggetto Location,
-        ma a quel punto $near non funziona più perché mongo vuole un Point, quindi o si usa la @Query sotto o si mette
-        Point nella classe Location invece di type e coordinates
-     */
-    /*@Query("""
-    {
-      'address.loc': {
-        $nearSphere: {
-          $geometry: { type: 'Point', coordinates: ?0 },
-          $maxDistance: ?1
-        }
-      }
-    }
-    """)
-    Page<Event> findEventsNear(List<Double> coordinates, double maxDistance, Pageable pageable);*/
-
     /**
      * Find every event containing at least one of the specified topics and starting at the specified date or later
      *
@@ -76,4 +70,88 @@ public interface EventRepository extends MongoRepository<@NonNull Event, @NonNul
      * @param pageable used to manage pagination
      */
     Page<@NonNull Event> findByCategoriesInAndStartingDateGreaterThanEqual(List<String> categories, LocalDate date, Pageable pageable);
+
+
+    @Aggregation(pipeline = {
+        "{ '$match': {'_id': ?0} }",
+        """
+        {
+            "$project": {
+                "total_attenders": { "$size": { "$ifNull": ["$attendees", []] } },
+                "average_rating": { "$ifNull": ["$event_score", 0] },
+                "date_update": "$$NOW",
+                "publish": { "$literal": false },
+                "totalAgeSum": {
+                    "$reduce": {
+                        "input": { "$ifNull": ["$attendees", []] },
+                        "initialValue": 0,
+                        "in": {
+                            "$add": [
+                                "$$value",
+                                {
+                                    "$dateDiff": {
+                                        "startDate": { "$toDate": "$$this.date_of_birth" },
+                                        "endDate": "$$NOW",
+                                        "unit": "year"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "calculatedIncome": {
+                    "$reduce": {
+                        "input": { "$ifNull": ["$attendees", []] },
+                        "initialValue": 0,
+                        "in": {
+                            "$add": [
+                                "$$value",
+                                { "$ifNull": [ { "$getField": { "field": "$$this.ticket_type", "input": "$ticket_price" } }, 0 ] }
+                            ]
+                        }
+                    }
+                },
+                "originList": {
+                    "$map": {
+                        "input": { "$setUnion": { "$ifNull": ["$attendees.home_town", []] } },
+                        "as": "city",
+                        "in": {
+                            "k": "$$city",
+                            "v": {
+                                "$size": {
+                                    "$filter": {
+                                        "input": { "$ifNull": ["$attendees", []] },
+                                        "as": "att",
+                                        "cond": { "$eq": ["$$att.home_town", "$$city"] }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        """,
+        """
+        {
+            "$project": {
+                "date_update": 1,
+                "total_attenders": 1,
+                "publish": 1,
+                "average_rating": 1,
+                "predicted_income": { "$ifNull": ["$calculatedIncome", 0] },
+                "average_age": {
+                    "$cond": [
+                        { "$eq": ["$total_attenders", 0] },
+                        0,
+                        { "$divide": ["$totalAgeSum", { "$cond": [{ "$eq": ["$total_attenders", 0] }, 1, "$total_attenders"] }] }
+                    ]
+                },
+                "origin_attenders": { "$arrayToObject": "$originList" }
+            }
+        }
+        """
+    })
+    Statistics calculateStatistics(String eventId);
+
 }

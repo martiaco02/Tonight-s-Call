@@ -552,6 +552,7 @@ public class Mapper {
         dto.setPredictedIncome(entity.getPredictedIncome());
         dto.setOriginAttenders(entity.getOriginAttenders());
         dto.setTotalAttenders(entity.getTotalAttenders());
+        dto.setPublish(entity.isPublish());
 
         return dto;
     }

@@ -61,4 +61,12 @@ public class StatisticsDTO {
     @JsonProperty("total_attenders")
     @Schema(description = "Total number of attendees", example = "175")
     private int totalAttenders;
+
+    /**
+     * Flags that indicates if the statistics can be published or not
+     */
+
+    @JsonProperty("publish")
+    @Schema(description = "States if the statistics can be published or not", type = "boolean")
+    private boolean publish;
 }

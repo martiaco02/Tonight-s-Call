@@ -1,5 +1,7 @@
 package it.unipi.tonightscall.entity.document;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,7 +32,7 @@ public class Statistics {
     /**
      * The average age of the attendees.
      */
-    @Field("avarage_age")
+    @Field("average_age")
     private double averageAge;
 
     /**
@@ -52,4 +54,10 @@ public class Statistics {
      */
     @Field("total_attenders")
     private int totalAttenders;
+
+    /**
+     * Flags that indicates if the statistics can be published or not
+     */
+    @Field("publish")
+    private boolean publish;
 }
