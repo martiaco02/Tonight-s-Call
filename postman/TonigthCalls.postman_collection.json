@@ -1,0 +1,1521 @@
+{
+  "info": {
+    "_postman_id": "320332d9-917c-4f57-88cf-2ec56a621a22",
+    "name": "TonigthCalls",
+    "description": "Test for all the Tonight's Call endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52002272",
+    "_collection_link": "https://go.postman.co/collection/49606477-320332d9-917c-4f57-88cf-2ec56a621a22?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "RegisterNewUser",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Martina\",\r\n    \"lastname\": \"Iacoponi\",\r\n    \"email\": \"m.iacoponi@studenti.unipi.it\",\r\n    \"username\": \"Marty\",\r\n    \"password\": \"marty\",\r\n    \"date_of_birth\": \"2002-02-2\",\r\n    \"interests\": [\"TEATRO\"],\r\n    \"home_town\": {\r\n        \"city_name\": \"Cascina\",\r\n        \"full_address\": \"8, Via vecchia fiorentina, Cascina, Pisa, Toscana, 56021\",\r\n        \"loc\": {\r\n            \"type\": \"Point\",\r\n            \"coordinates\": [10.476663, 43.689943]\r\n        }\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/auth/user/register",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "auth",
+                "user",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "loginUser",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"happytiger915\",\r\n    \"password\": \"happytiger915\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/auth/user/login",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "auth",
+                "user",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RegisterNewOrganizer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n        \"type\": \"ORGANIZER\",\r\n        \"name\": \"Pietro\",\r\n        \"lastname\": \"Ducange\",\r\n        \"VAT_number\": \"IT9876543210\",\r\n        \"email\": \"pietro.ducange@unipi.com\",\r\n        \"username\": \"Pietro\",\r\n        \"date_of_birth\": \"2000-09-21\",\r\n        \"password\": \"pietro\"\r\n    }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/auth/organizer/register",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "auth",
+                "organizer",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "LoginOrganizer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"yellowpeacock522\",\r\n    \"password\": \"yellowpeacock522\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/auth/organizer/login",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "auth",
+                "organizer",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "organizationLogin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\" : \"I magnifici tre\",\r\n    \"password\" : \"AXB\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/auth/organization/login",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "auth",
+                "organization",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "AddFriend",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlM2JkMDg3YWYzYWM0ZDhkMDU5OGMiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5ODg0MTU0LCJpYXQiOjE3Njk4ODA1NTR9.oyd0uk4_uXNGrwb87CYg1kh5sRjz61fVcxIf5Tdy2gQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\" : \"greenfrog553\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/user/RegisterFriend",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user",
+                "RegisterFriend"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AddReview",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlM2JkMDg3YWYzYWM0ZDhkMDU5OGMiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5ODg0MTU0LCJpYXQiOjE3Njk4ODA1NTR9.oyd0uk4_uXNGrwb87CYg1kh5sRjz61fVcxIf5Tdy2gQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"event_id\" : \"6975e1b8461ac693c0ee0c65\",\r\n    \"text\" : \"This is a very good Musical!\",\r\n    \"score\": 5\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/user/review",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user",
+                "review"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AddAttends",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlM2JkMDg3YWYzYWM0ZDhkMDU5OGMiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5OTAzMTc0LCJpYXQiOjE3Njk4OTk1NzR9._Q2-V9eYIBOWVqz7jpnniUDFaSpkQG3Yi9w3Zr4Pdj8",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"event_id\" : \"6975af09461ac693c0edf5af\",\r\n    \"ticket_type\": \" Intero\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/user/attending",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user",
+                "attending"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAllUser",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc3NDk1OThhMjFlMzU2OWU3MTdiZTQiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5OTQ2NTkwLCJpYXQiOjE3Njk5NDI5OTB9.lldLPafNsHUNUWNJUvuuvA3-Wwh_AIaT1TYKbTzStbI",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/user",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc3NDk1OThhMjFlMzU2OWU3MTdiZTQiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5OTQ2NTkwLCJpYXQiOjE3Njk5NDI5OTB9.lldLPafNsHUNUWNJUvuuvA3-Wwh_AIaT1TYKbTzStbI",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/user/me",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlM2JkMDg3YWYzYWM0ZDhkMDU5OGMiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5ODg0MTU0LCJpYXQiOjE3Njk4ODA1NTR9.oyd0uk4_uXNGrwb87CYg1kh5sRjz61fVcxIf5Tdy2gQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\" : \"martina@example.it\",\r\n    \"interests\": [\"TEATRO\", \"FESTIVAL\"] \r\n\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/user/update",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user",
+                "update"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateReview",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc5Y2MzYmY4MTcwNjczOWQwYTk0N2QiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5NzczMjEwLCJpYXQiOjE3Njk2MDA0MTB9.SmAOxwNh4Kqhbe8KckvqzkC8F5dCFESiz95u-K5hU_c",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"score\" : 5,\r\n    \"eventId\" : \"Frank1\",\r\n    \"text\" : \"Miiii - Ringhio\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/user/review",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user",
+                "review"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "deleteFriendship",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlM2JkMDg3YWYzYWM0ZDhkMDU5OGMiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5ODg0MTU0LCJpYXQiOjE3Njk4ODA1NTR9.oyd0uk4_uXNGrwb87CYg1kh5sRjz61fVcxIf5Tdy2gQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/user/friendship/whiteostrich754",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user",
+                "friendship",
+                "whiteostrich754"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DeleteAttendecy",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc0YTUwYzQ0YWM0OGMwNjU3YWQwNjQiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk5MDU0NjMsImlhdCI6MTc2OTkwMTg2M30.pc9r8R5tV2n1x1SfHl0GS5CP52fAd2Wnoa_f9NNj7dk",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/user/attending/6975af09461ac693c0edf5af",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user",
+                "attending",
+                "6975af09461ac693c0edf5af"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "makeEventSuggestion",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc3NDk1OThhMjFlMzU2OWU3MTdiZTQiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5OTQzMTc5LCJpYXQiOjE3Njk5Mzk1Nzl9.oguIYDkQw7ToTwIkE_iggQahmWWL6M7IJCBaMKRnoWI",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/user/suggestEvent?distance=100&startingTime=2026-01-28",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user",
+                "suggestEvent"
+              ],
+              "query": [
+                {
+                  "key": "distance",
+                  "value": "100"
+                },
+                {
+                  "key": "startingTime",
+                  "value": "2026-01-28"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "makeUserSuggestion",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc3NDk1OThhMjFlMzU2OWU3MTdiZTQiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5OTQzMTc5LCJpYXQiOjE3Njk5Mzk1Nzl9.oguIYDkQw7ToTwIkE_iggQahmWWL6M7IJCBaMKRnoWI",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/user/suggestFriend?limit=3",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "user",
+                "suggestFriend"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "3"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Organizer",
+      "item": [
+        {
+          "name": "RegisterOrganization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlNDc2Mjg3YWYzYWM0ZDhkMDU5OGQiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk4OTg0MTUsImlhdCI6MTc2OTg5NDgxNX0.c-SlG1rYMCP5s21yrYUYlP8uWFHMx9SHIRL8Wp03fG0",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Bearer",
+                "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJNYXJ0eTMiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3NjkxMDY4OTUsImlhdCI6MTc2OTEwMzI5NX0.2HAimNMmV7QBg691hE5-wlkUEJPPGJs0CZiZrWFZioE",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n        \"type\": \"ORGANIZATION\",\r\n        \"name\": \"I magnifici tre\",\r\n        \"VAT_number\": \"MX531052916\",\r\n        \"email\": \"magnifici@example.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/organizer/registerOrganization",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organizer",
+                "registerOrganization"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RegisterNewEvent",
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "connection": true
+            }
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlNzNkZmQ5MjdhM2Q4NWMwYWY5NTUiLCJyb2xlIjoiT1JHQU5JWkFUSU9OIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk4OTg1MDQsImlhdCI6MTc2OTg5NDkwNH0.wnmNEdADjFPEOs6QwtBEg6hgGNGDuTMbj1RSQqthKWw",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n\t\"event_name\": \"Lucca Film Festival\",\r\n\t\"position\": {\r\n\t\t\"city_name\": \"Lucca\",\r\n\t\t\"full_address\": \"15, Via Fillungo, Lucca, Toscana, 55100\",\r\n\t\t\"loc\": {\r\n\t\t\t\"type\": \"Point\",\r\n\t\t\t\"coordinates\": [10.504314, 43.844982]\r\n\t\t}\r\n\t},\r\n\t\"ticket_price\": {\r\n        \"Intero\": 150,\r\n        \"Ridotto\" : 25\r\n    },\r\n\t\"starting_date\": \"2026-03-01\",\r\n\t\"ending_date\": \"2026-03-10\", \r\n\t\"categories\": [\"FESTIVAL\"], \r\n\t\"description\": \"During the Lucca Film Festival you could see a lot a very good films\",\r\n\t\"url_img\": \"https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F43479756%2F252537683456%2F1%2Foriginal.jpg?auto=compress&s=953327e0a8e39d11f2314fc6c6e6ec9a\",\r\n\t\"starting_times\": [\"21:00\"]\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/organizer/registerEvent",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organizer",
+                "registerEvent"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAllOrganizer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlNDc2Mjg3YWYzYWM0ZDhkMDU5OGQiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk4OTA5MTgsImlhdCI6MTc2OTg4NzMxOH0.14UABP78T0ubDLuWHllO8MqFCJPjnPWfSmfv0dTJCCo",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/organizer",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organizer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlNDc2Mjg3YWYzYWM0ZDhkMDU5OGQiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk4OTA5MTgsImlhdCI6MTc2OTg4NzMxOH0.14UABP78T0ubDLuWHllO8MqFCJPjnPWfSmfv0dTJCCo",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/organizer/me",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organizer",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "UpdateOrganizer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc0YTUwYzQ0YWM0OGMwNjU3YWQwNjQiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk5MDI5MDcsImlhdCI6MTc2OTg5OTMwN30.fX2KpEt5QL5dHUf34VMk_hwqKDpfZZWa_UeFWvzExy8",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"type\" : \"ORGANIZER\",\r\n    \"password\": \"yellowpeacock522\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/organizer/update",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organizer",
+                "update"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QuitOrganization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc5Y2ZkZjVhMDUzNTJmM2FkYjQwNzkiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk3ODAzNTYsImlhdCI6MTc2OTYwNzU1Nn0.ObYulWA8w6RKHDaNCkZ-uKlZLQDP-Yr1_R9ofFsePYE",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/organizer/organization/I%20Giaocomi",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organizer",
+                "organization",
+                "I%20Giaocomi"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Organization",
+      "item": [
+        {
+          "name": "AceptRequestJoinOrganization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlNzNkZmQ5MjdhM2Q4NWMwYWY5NTUiLCJyb2xlIjoiT1JHQU5JWkFUSU9OIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk4OTg1MDQsImlhdCI6MTc2OTg5NDkwNH0.wnmNEdADjFPEOs6QwtBEg6hgGNGDuTMbj1RSQqthKWw",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Bearer",
+                "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJNYXJ0eTMiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3NjkxMDY4OTUsImlhdCI6MTc2OTEwMzI5NX0.2HAimNMmV7QBg691hE5-wlkUEJPPGJs0CZiZrWFZioE",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"new_member_id\" : \"697e7481d927a3d85c0af957\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/organization/accept",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organization",
+                "accept"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AddRequestJoinOrganization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlNzUyZWQ5MjdhM2Q4NWMwYWY5NTgiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk4OTg4MjUsImlhdCI6MTc2OTg5NTIyNX0.bU1OnIWXUPatmuI-rnSKkBooFPQ1yyIWTamCgzFF8dI",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"organization_id\" : \"697e73dfd927a3d85c0af955\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/organization/request",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organization",
+                "request"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RegisterNewEvent",
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "connection": true
+            }
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc5Y2Y2YzRjNjEyN2U4MWQxNGI5YWQiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk2OTcwMjIsImlhdCI6MTc2OTY5MzQyMn0.gRcGIRAG-N-RITNoIT4RxgSBMsHVp68_rnbDL1i-4-k",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n\t\"event_name\": \"Il cosmo sul comò\",\r\n\t\"position\": {\r\n\t\t\"city_name\": \"Pisa\",\r\n\t\t\"full_address\": \"Via Al tre dita, 5\",\r\n\t\t\"loc\": {\r\n\t\t\t\"type\": \"Point\",\r\n\t\t\t\"coordinates\": [40.9181754, 14.8308425]\r\n\t\t}\r\n\t},\r\n\t\"ticket_price\": {\r\n        \"Intero\": 75,\r\n        \"Ridotto\" : 50\r\n    },\r\n\t\"starting_date\": \"2026-02-26T00:00:00.000Z\",\r\n\t\"ending_date\": \"2026-03-01T00:00:00.000Z\", \r\n\t\"categories\": [\"VISTI IN RETE\"], \r\n\t\"description\": \"Un'altro dei miglori film dei trio\",\r\n\t\"url_img\": \"https://img.evbuc.com/https%3A%2F%2Fcdn.evbuc.com%2Fimages%2F43479756%2F252537683456%2F1%2Foriginal.jpg?auto=compress&s=953327e0a8e39d11f2314fc6c6e6ec9a\",\r\n\t\"starting_times\": [\"09:00 - 12:00\"]\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/organizer/registerEvent",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organizer",
+                "registerEvent"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlNzNkZmQ5MjdhM2Q4NWMwYWY5NTUiLCJyb2xlIjoiT1JHQU5JWkFUSU9OIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk4OTg1MDQsImlhdCI6MTc2OTg5NDkwNH0.wnmNEdADjFPEOs6QwtBEg6hgGNGDuTMbj1RSQqthKWw",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/organization/me",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organization",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAllOrganization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc5ZDkxN2MxOGFlY2JhNDJjMzVlZTYiLCJyb2xlIjoiT1JHQU5JWkFUSU9OIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk3ODEwNjMsImlhdCI6MTc2OTYwODI2M30.ZkABZDC-iHWXNs8_urXvvXPkhlorVoV4y2Bg7-8U-x0",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/organization?page=0",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organization"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "analizeOrganization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlNzNkZmQ5MjdhM2Q4NWMwYWY5NTUiLCJyb2xlIjoiT1JHQU5JWkFUSU9OIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk5NDIzMTAsImlhdCI6MTc2OTkzODcxMH0.nzW-hrt5FjfQud9CHRkdbycKCTHg25tPyYXGK7Q9crQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/organization/analyze",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organization",
+                "analyze"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateOrganization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc5ZDkxN2MxOGFlY2JhNDJjMzVlZTYiLCJyb2xlIjoiT1JHQU5JWkFUSU9OIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk3ODEwNjMsImlhdCI6MTc2OTYwODI2M30.ZkABZDC-iHWXNs8_urXvvXPkhlorVoV4y2Bg7-8U-x0",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"type\" : \"ORGANIZATION\",\r\n    \"email\" : \"a.b@c.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/organization/update",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organization",
+                "update"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "RefuseJoinOrganization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlNzNkZmQ5MjdhM2Q4NWMwYWY5NTUiLCJyb2xlIjoiT1JHQU5JWkFUSU9OIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk4OTg1MDQsImlhdCI6MTc2OTg5NDkwNH0.wnmNEdADjFPEOs6QwtBEg6hgGNGDuTMbj1RSQqthKWw",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/organization/request/Pietro",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "organization",
+                "request",
+                "Pietro"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Event",
+      "item": [
+        {
+          "name": "GetAllEvent",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/event/events",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "events"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getEventById",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/event/6975af09461ac693c0edf5af",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "6975af09461ac693c0edf5af"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getEventByTopic",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/event/search/topics?topics=SPETTACOLI",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "search",
+                "topics"
+              ],
+              "query": [
+                {
+                  "key": "topics",
+                  "value": "SPETTACOLI"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetEventByDate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/event/search/date?startingDate=2026-08-21",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "search",
+                "date"
+              ],
+              "query": [
+                {
+                  "key": "startingDate",
+                  "value": "2026-08-21"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getByLocation",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/event/search/location?longitude=9.3341093&latitude=40.3216329&distance=10",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "search",
+                "location"
+              ],
+              "query": [
+                {
+                  "key": "longitude",
+                  "value": "9.3341093"
+                },
+                {
+                  "key": "latitude",
+                  "value": "40.3216329"
+                },
+                {
+                  "key": "distance",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getByCity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/event/city/Milano",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "city",
+                "Milano"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetByDateAndCategory",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/event/search/topic-date?categories=MOSTRE&date=2026-04-01",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "search",
+                "topic-date"
+              ],
+              "query": [
+                {
+                  "key": "categories",
+                  "value": "MOSTRE"
+                },
+                {
+                  "key": "date",
+                  "value": "2026-04-01"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getStatistics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc0YTUwYzQ0YWM0OGMwNjU3YWQwNjQiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk5MDU0OTMsImlhdCI6MTc2OTkwMTg5M30.B7HAYWNMxfItrGK_IZYK1_2XOLMBGTs5nmouSiWb_hI",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/event/statistics/6975af09461ac693c0edf5af",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "statistics",
+                "6975af09461ac693c0edf5af"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "demographics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlM2JkMDg3YWYzYWM0ZDhkMDU5OGMiLCJyb2xlIjoiVVNFUiIsImlzcyI6Ik15U3ByaW5nQXBwIiwiZXhwIjoxNzY5OTA1ODU4LCJpYXQiOjE3Njk5MDIyNTh9.110CHebdzCQVErH6_fsHjwhD9wEVssJrUa0aNHAmpkk",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/event/demographics/2025/%20Milano",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "demographics",
+                "2025",
+                "%20Milano"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "UpdateEvent",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTdlNDc2Mjg3YWYzYWM0ZDhkMDU5OGQiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk4OTMwMTMsImlhdCI6MTc2OTg4OTQxM30.JJBT7kPkIGcj0jF3FVJHr3YEzRHg_62e4p9qmAQ0FbM",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"categories\": [\"SAGRESAGRE E FESTE\"]\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "10.1.1.17:8080/event/update-event/697e489687af3ac4d8d0598e",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "update-event",
+                "697e489687af3ac4d8d0598e"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "publishStatistics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2OTc0YTUwYzQ0YWM0OGMwNjU3YWQwNjQiLCJyb2xlIjoiT1JHQU5JWkVSIiwiaXNzIjoiTXlTcHJpbmdBcHAiLCJleHAiOjE3Njk5NDAyMjYsImlhdCI6MTc2OTkzNjYyNn0.BHJvo8HvUZdydstNX7ssqmEfLd_tWmrLncKeBjVZXWQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "10.1.1.17:8080/event/publishStatistics/6975af09461ac693c0edf5af",
+              "host": [
+                "10",
+                "1",
+                "1",
+                "17"
+              ],
+              "port": "8080",
+              "path": [
+                "event",
+                "publishStatistics",
+                "6975af09461ac693c0edf5af"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
