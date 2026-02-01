@@ -1,0 +1,11 @@
+it.unipi.tonightscall
+it.unipi.tonightscall.controller
+it.unipi.tonightscall.DTO
+it.unipi.tonightscall.entity.document
+it.unipi.tonightscall.entity.graph
+it.unipi.tonightscall.jwt
+it.unipi.tonightscall.repository.document
+it.unipi.tonightscall.repository.graph
+it.unipi.tonightscall.security
+it.unipi.tonightscall.service
+it.unipi.tonightscall.utilies
