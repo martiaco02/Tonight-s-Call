@@ -39,7 +39,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final TopicGraphRepository topicGraphRepository;
 
-    public final int PAGE_SIZE = 10;
+    public final int PAGE_SIZE = 5;
 
     public UserService(UserRepository userRepository, EventRepository eventRepository, UserGraphRepository userGraphRepository, EventGraphRepository eventGraphRepository, PasswordEncoder passwordEncoder, TopicGraphRepository topicGraphRepository) {
         this.userRepository = userRepository;
@@ -597,13 +597,14 @@ public class UserService {
      * @param id The id of the user whose attendee must be deleted.
      * @return The updated UserDTO
      * @throws RuntimeException If the User is not found or if the event is not found.
+     * @throws IllegalArgumentException If the userId doesn't exists or the event doesn't exists
      */
     @Transactional
     public UserDTO deleteAttendance(String eventID, String id){
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found!"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found!"));
         Event event = eventRepository.findById(eventID)
-                .orElseThrow(() -> new RuntimeException("Event not found!"));
+                .orElseThrow(() -> new IllegalArgumentException("Event not found!"));
 
         for(int i=0; i<event.getAttendees().size(); i++){
             if(event.getAttendees().get(i).getUsername().equals(user.getUsername())){

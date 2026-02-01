@@ -317,6 +317,32 @@ public class UserController {
     }
 
     /**
+     * Remove an attendecy to one event
+     *
+     *  @param eventId The id of the event
+     *  @param authentication The security context of the logged-in user
+     *  @return ResponseEntity with the response
+     */
+   @Operation(summary = "Remove an Attency to one event", description = "The user removes his attendency to an event")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully removed attendency"),
+            @ApiResponse(responseCode = "404", description = "No User or event fount"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters"),
+            @ApiResponse(responseCode = "403", description = "Authentication needed")
+    })
+   @DeleteMapping("/attending/{eventId}")
+   public ResponseEntity<?> deleteAttendace(@PathVariable String eventId, Authentication authentication) {
+  	try {
+		UserDTO u = userService.deleteAttendance(eventId, authentication.getName());
+		return ResponseEntity.ok(u);
+	} catch (IllegalArgumentException e) {
+		return ResponseEntity.noContent().build();
+	} catch (RuntimeException e) {
+		return ResponseEntity.badRequest().body(e.getMessage());
+  	}
+    }   
+
+    /**
      * Provides a list of suggested events based on user preferences, friends' reviews,
      * and geographical proximity.
      *

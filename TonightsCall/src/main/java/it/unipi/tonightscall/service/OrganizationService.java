@@ -30,7 +30,7 @@ public class OrganizationService {
     private final OrganizationRepository organizationRepository;
     private final OrganizerRepository organizerRepository;
 
-    public final int PAGE_SIZE = 10;
+    public final int PAGE_SIZE = 5;
 
     public OrganizationService(OrganizationRepository organizationRepository, OrganizerRepository organizerRepository) {
         this.organizationRepository = organizationRepository;

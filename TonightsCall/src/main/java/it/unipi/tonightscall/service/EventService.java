@@ -33,7 +33,7 @@
 
         public final OrganizerRepository organizerRepository;
 
-        public final int PAGE_SIZE = 10;
+        public final int PAGE_SIZE = 5;
         private final UserRepository userRepository;
 
         public EventService(EventRepository eventRepository, EventGraphRepository eventGraphRepository, OrganizerRepository organizerRepository, UserRepository userRepository) {

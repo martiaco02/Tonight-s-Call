@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.geo.Point;
+import org.springframework.data.geo.Metrics;
 
 import java.awt.*;
 import java.time.LocalDate;
@@ -259,13 +260,14 @@ public class EventController {
             @ApiResponse(responseCode = "400", description = "Invalid coordinates", content = @Content)
     })
     @GetMapping("/search/location")
-    public ResponseEntity<?> getEventsByLocation(@RequestParam double longitude,@RequestParam double latitude, Distance distance, @RequestParam(defaultValue = "0") @Min(0) int page) {
+    public ResponseEntity<?> getEventsByLocation(@RequestParam double longitude, @RequestParam double latitude, @RequestParam(defaultValue="10") double distance, @RequestParam(defaultValue = "0") @Min(0) int page) {
 
         try {
             Point location = new Point(longitude, latitude);
+	    Distance d = new Distance(distance, Metrics.KILOMETERS);
             Pageable pageable = PageRequest.of(page, this.eventService.PAGE_SIZE);
 
-            Page<@NonNull EventDTO> events = this.eventService.getEventsByLocation(location, distance, pageable);
+            Page<@NonNull EventDTO> events = this.eventService.getEventsByLocation(location, d, pageable);
             if (events == null) {
                 return ResponseEntity.notFound().build();
             } else if (events.isEmpty()) {
@@ -441,7 +443,7 @@ public class EventController {
                     content = @Content
             )
     })
-    @GetMapping("/publishStatistics/{event_id}")
+    @PutMapping("/publishStatistics/{event_id}")
     public ResponseEntity<?> publishStatistics(@PathVariable String event_id, Authentication authentication) {
         try{
             EventDTO eventDTO = eventService.publishStatistics(event_id, authentication.getName());

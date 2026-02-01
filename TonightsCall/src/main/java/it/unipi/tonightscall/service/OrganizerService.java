@@ -45,7 +45,7 @@ public class OrganizerService {
     private final TopicGraphRepository topicGraphRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public final int PAGE_SIZE = 10;
+    public final int PAGE_SIZE = 5;
 
     public OrganizerService(
             OrganizationRepository organizationRepository,
