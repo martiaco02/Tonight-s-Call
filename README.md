@@ -13,7 +13,7 @@
 ### 📖 Descrizione
 **Tonight's Call** è un progetto universitario realizzato per il corso di *Large Scale and Multi-Structured Databases* (Anno Accademico 2025/2026) del corso di Laurea Magistrale in Computer Engineering presso l'**Università di Pisa (@unipi)**.
 
-Il progetto ha lo scopo di mettere in contatto la domanda e l'offerta della più classica delle domande: "Ma stasera cosa facciamo?", andando a fornire suggerimenti, permettere di visualizzare recensioni di eventi passati, stringere amicizie e molte altre funzionalità.
+Il progetto ha lo scopo di mettere in contatto la domanda e l'offerta della più popolare delle domande: "Ma stasera cosa facciamo?", andando a fornire suggerimenti e permettendo di visualizzare recensioni di eventi passati, stringere amicizie e molte altre funzionalità.
 
 L'architettura è stata pensata per essere scalabile e per interfacciarsi con un'API RESTful testabile tramite Postman.
 
@@ -49,4 +49,5 @@ The architecture is designed to be scalable and interfaces with a RESTful API th
 * **Databases:** MongoDB, Neo4j
 * **API Testing:** Postman (collections are available in the `/postman` folder)
 * **Documentation:** Available in the `/doc` folder
+
 
