@@ -35,7 +35,7 @@ L'architettura è stata pensata per essere scalabile e per interfacciarsi con un
 ### 📖 Description
 **Tonight's Call** is an academic project developed for the *Large Scale and Multi-Structured Databases* course (Academic Year 2025/2026) of the Master's Degree in Computer Engineering at the **University of Pisa (@unipi)**.
 
-The project aims to connect supply and demand for the most classic of questions: "What are we doing tonight?", providing suggestions, allowing users to view reviews of past events, and offering many other features.
+The project aims to connect supply and demand for the most popular of questions: "What are we doing tonight?", providing suggestions, allowing users to view reviews of past events, and offering many other features.
 
 The architecture is designed to be scalable and interfaces with a RESTful API that can be tested via Postman.
 
@@ -49,3 +49,4 @@ The architecture is designed to be scalable and interfaces with a RESTful API th
 * **Databases:** MongoDB, Neo4j
 * **API Testing:** Postman (collections are available in the `/postman` folder)
 * **Documentation:** Available in the `/doc` folder
+
