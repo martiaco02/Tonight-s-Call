@@ -11,7 +11,7 @@
 ## 🇮🇹 Italiano
 
 ### 📖 Descrizione
-**Tonight's Call** è un progetto universitario realizzato per il corso di *Large Scale and Multi-Structured Databases* (Anno Accademico 2025/2026) del corso di Laurea Magistrale in Computer Engineering presso l'**Università di Pisa (@unipi)**.
+**Tonight's Call** è un progetto universitario realizzato per il corso di *Large-Scale and Multi-Structured Databases* (Anno Accademico 2025/2026) del corso di Laurea Magistrale in Computer Engineering presso l'**Università di Pisa (@unipi)**.
 
 Il progetto ha lo scopo di mettere in contatto la domanda e l'offerta della più popolare delle domande: "Ma stasera cosa facciamo?", andando a fornire suggerimenti e permettendo di visualizzare recensioni di eventi passati, stringere amicizie e molte altre funzionalità.
 
@@ -33,7 +33,7 @@ L'architettura è stata pensata per essere scalabile e per interfacciarsi con un
 ## 🇬🇧 English
 
 ### 📖 Description
-**Tonight's Call** is an academic project developed for the *Large Scale and Multi-Structured Databases* course (Academic Year 2025/2026) of the Master's Degree in Computer Engineering at the **University of Pisa (@unipi)**.
+**Tonight's Call** is an academic project developed for the *Large-Scale and Multi-Structured Databases* course (Academic Year 2025/2026) of the Master's Degree in Computer Engineering at the **University of Pisa (@unipi)**.
 
 The project aims to connect supply and demand for the most popular of questions: "What are we doing tonight?", providing suggestions, allowing users to view reviews of past events, and offering many other features.
 
